@@ -1,0 +1,31 @@
+.p1 rect {
+  fill: #000000;
+}
+
+.p1 g polygon {
+  opacity: 1;
+}
+
+.p1 circle {
+  fill: silver;
+  stroke: #ffffff;
+  stroke-width: 2;
+  filter: url(#dropshadow);
+}
+
+.p1 text {
+  font-size: 30px;
+  fill: gray;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 600;
+  text-indent: 20px;
+  /* font-smooth: always; */
+  /* transition: all .1s ease-in-out; */
+}
+
+.p1 text.active {
+  fill: yellow;
+  font-weight: 600;
+  /* font-smooth: always; */
+  /* transition: all .3s ease-in-out; */
+}
