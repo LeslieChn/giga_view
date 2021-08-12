@@ -1,7 +1,5 @@
 var view_states=[]
 
-var selected_vs=null
-
 let req1 =
   {
     qid: "MD_AGG",
@@ -118,7 +116,6 @@ selected_vs.createTile()
 input.value=0
 vs_knob=new Knob(input, new Ui.P1({}))
 
-console.log(view_states)
 
 function refreshTiles(){
   selected_vs.refresh()
@@ -136,7 +133,6 @@ function viewChangeCallback ()
 {
   let dd_id = '#' + $(this).attr('data-dropdown')
   let index = $(this).val();
-  console.log(index)
   $(dd_id).prop('selectedIndex', index);
   selected_vs=view_states[index]
   selected_vs.createTile()
@@ -147,7 +143,6 @@ function controlsChangeCallback ()
 {
   let dd_id = '#' + $(this).attr('data-dropdown')
   let index = $(this).val();
-  console.log(index)
   $(dd_id).prop('selectedIndex', index);
   selected_vs.createContent()
 }

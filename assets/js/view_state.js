@@ -50,6 +50,7 @@ state.tile_config = {header: , subheader: , body: , parentdiv: }
 const ps_object = {}
 var knob_objects = {}
 var vs_knob = null
+var selected_vs=null
 /*******************************************************************************/
 
 function Comma_Sep(a,vs_id) {
@@ -201,6 +202,10 @@ class View_State
   {
     return this.state.id
   }
+  getViewType()
+  {
+    return this.state.view_type
+  }
   getHeight()
   {
     return this.state.tile_config.height
@@ -321,7 +326,6 @@ class View_State
       input.dataset.labels=(def.contents).map(()=>'.')
       input.value=0
       knob_objects[`${id}-${this.getId()}-knob`]=new Knob(input, new Ui.P1({}))
-      console.log(knob_objects)
     }
   }
   createTile()
@@ -404,6 +408,12 @@ class View_State
 
     await this.serverRequest()
 
+    // if (selected_vs && this.getViewType() != selected_vs.getViewType())
+    if (selected_vs && this!==selected_vs)
+    {
+      return 
+    } 
+
     let req=this.state.request
     let vs_id=this.getId()
 
@@ -479,6 +489,11 @@ class View_State
     {
       this.object_instance.destroy()
     }
+
+    if (selected_vs && this!==selected_vs)
+    {
+      return 
+    } 
 
     let cfg=this.state.tile_config
     
@@ -599,6 +614,7 @@ class View_State
     let req=this.state.request;
     let gby_headers=itemSubstitute(req.groupbys, vs_id);
     let val_headers=itemSubstitute(req.measures, vs_id);
+
   
     let root = gby_headers[0]
     let data = [{id:root, value:0}]
@@ -654,6 +670,13 @@ class View_State
       .round(true);
 
     let data = await this.getTreeMapData();
+
+    
+    if (selected_vs && this!==selected_vs)
+    {
+      return 
+    } 
+
     var root = stratify(data)
         .sum(function(d) { return d.value; })
         .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
@@ -728,7 +751,12 @@ class View_State
     async countymap()
     {
       let result = await this.getCountyData();
-  
+
+      if (selected_vs && this!==selected_vs)
+      {
+        return 
+      } 
+
       let county_data = result.lut;
       let max_data = result.max;
       let min_data = result.min;
@@ -899,8 +927,6 @@ class View_State
             );
             function mapClicked(d) {
               centered = centered !== d && d;
-              console.log(d)
-              console.log(centered)
         
               var paths = svg.selectAll("path")
                 .classed("active", d => d === centered);
@@ -952,7 +978,7 @@ class View_State
               //     .attr("x2", x + width)
               //     .attr("y2", -5)
               //     .attr("style", `stroke:black;stroke-width:4`)  
-              console.log
+    
               tooltipDiv
                   .style("opacity", 0.9);
               tooltipDiv.html(`${county} ${state} <br> ${value}`)
@@ -962,8 +988,6 @@ class View_State
       });
       
       function mapReset(){
-        console.log("reset")
-        ddddd
       }
     }
     
