@@ -108,8 +108,22 @@ Knob.prototype = {
     // this.triggerChange();
   },
 
+
+  // make sure val is between min and max values
+  // if it isn't map it into the range cyclically
+  // compare with the limit method that does the mapping
+  // by clipping at the min and max values 
+  cyclic: function(val)
+  {
+    let min_val = 0 || this.settings.min
+    let max_val = 0 || this.settings.max
+    let num_vals = max_val - min_val + 1
+    let new_val = ((val - min_val) % num_vals) + min_val
+    return new_val < min_val ? new_val + num_vals : new_val
+  },
+
   changed: function(direction) {
-    this.input.value = this.limit(parseFloat(this.input.value) + direction * (this.input.step || 1));
+    this.input.value = this.cyclic(parseFloat(this.input.value) + direction * (this.input.step || 1));
     this.value = this.input.value;
     this.ui.update(this._valueToPercent(), this.value);
     this.triggerChange();

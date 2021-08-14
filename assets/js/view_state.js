@@ -402,13 +402,13 @@ class View_State
     {console.log(e)}
 
   }
-  async grid(){
+  async grid()
+  {
 
     $(`#${this.getId()}`).html(`<div id="${this.getId()}-grid"></div>`)
 
     await this.serverRequest()
 
-    // if (selected_vs && this.getViewType() != selected_vs.getViewType())
     if (selected_vs && this!==selected_vs)
     {
       return 
@@ -424,12 +424,15 @@ class View_State
 
     let columns=[]
 
-    for (let col of gby_headers){
+    for (let col of gby_headers)
+    {
       // let col_name=col.startsWith('?')?$(`#${col.slice(1)}`).val():col
       columns.push({field:col, text:col, attr:col, sortable:true})
       // searches.push({field:col, text:col, label:col, type:"text"})
     }
-    for (let col of val_headers){
+
+    for (let col of val_headers)
+    {
       columns.push({field:col, text:col, sortable:true})
       // searches.push({field:col, text:col, label:col, type:"float"})
     }
@@ -437,10 +440,12 @@ class View_State
     let count=1
     let records=[]
 
-    for (let row of server_js){
+    for (let row of server_js)
+    {
       let rec={recid:count++}
       let n_gbys=gby_headers.length
-      for (let i=0; i<n_gbys; i++){
+      for (let i=0; i<n_gbys; i++)
+      {
         rec [gby_headers[i]]=row[0][i]
       }
       for (let i=0; i<val_headers.length; i++){
@@ -449,28 +454,38 @@ class View_State
       records.push(rec)
     }
 
-    try{
-      try{w2ui[this.getId()].destroy()}
-      catch(e){}
-       this.object_instance=$(`#${this.getId()}-grid`).w2grid({
-        name: this.getId(),
-        columns: columns,
-        records: records,
-        // searches: searches,
-        });
-        if(this.getId() in ps_object)
+    try
+    {
+      try
+      {
+        w2ui[this.getId()].destroy()
+      }
+      catch(e)
+      {}
+      this.object_instance=$(`#${this.getId()}`).w2grid( 
         {
-          ps_object[this.getId()].destroy()
+          name: this.getId(),
+          columns: columns,
+          records: records,
+          // searches: searches,
         }
-        const ps = new PerfectScrollbar(`#grid_${this.getId()}_records`, {
-          wheelSpeed: 2,
-          wheelPropagation: false,
-          minScrollbarLength: 20
-        })
-        ps_object[this.getId()]=ps
+      );
+      if(this.getId() in ps_object)
+      {
+        ps_object[this.getId()].destroy()
+      }
+      const ps = new PerfectScrollbar(`#grid_${this.getId()}_records`, {
+        wheelSpeed: 2,
+        wheelPropagation: false,
+        minScrollbarLength: 20
+      })
+      ps_object[this.getId()]=ps
     }
     catch(e)
-    {console.log(e)}
+    {
+      console.log('Error!!!')
+      console.log(e)
+    }
   }
   // chart()
   // {
