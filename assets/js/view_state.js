@@ -71,22 +71,8 @@ function Comma_Sep(a,vs_id) {
   return s;
 }
 
-function itemSubstitute(a_in, vs_id) {
-  var a_out = [];
-  for (let i = 0; i < a_in.length; i++) {
-    let item=a_in[i]
-    if(item.startsWith('?')){
-      let dd_id=item.slice(1)
-      a_out.push($(`#${dd_id}-${vs_id}`).val())
-    }
-    else
-      a_out.push(item);
-  }
-
-  return a_out;
-}
-
-function chartColorGradient(canvas, bg_color){
+function chartColorGradient(canvas, bg_color)
+{
   let ctx2 = canvas.getContext("2d");
   let gradientStroke = ctx2.createLinearGradient(0, canvas.scrollHeight, 0, 50);
   gradientStroke.addColorStop(1, hexToRGB(bg_color, 0.2));
@@ -157,7 +143,7 @@ function getKnob(id)
   if (id=='view-knob')
     return vs_knob
   else
-    return knob_objects[`${id}-knob`]
+    return knob_objects[`${id}`]
 }
 /*******************************************************************************/
 class View_State 
@@ -222,6 +208,34 @@ class View_State
   {
     $(`#${this.getId()}-box`).show()
   }
+
+  alias(name)
+  {
+    if (!('aliases' in this.state) || !(name in this.state.aliases))
+      return name
+    else
+    {
+      return this.state.aliases[name]
+    }
+  }
+
+  itemSubstitute(a_in, vs_id) 
+  {
+    var a_out = [];
+    for (let i = 0; i < a_in.length; i++)
+     {
+      let item=a_in[i]
+      if(item.startsWith('?'))
+      {
+        let dd_id=item.slice(1)
+        item = $(`#${dd_id}-${vs_id}`).val()
+      }
+      a_out.push(this.alias(item));
+    }
+  
+    return a_out;
+  }
+
   maximize()
   {
     $('.content').height('65vh')
@@ -266,24 +280,30 @@ class View_State
         this_chart.data.datasets.forEach((dataset, i) => {
           let chart_def = this.state.chart_def[i];
           let bg_color = chart_def.backgroundColor;
-          dataset.backgroundColor=chartColorGradient(canvas, bg_color)
+          dataset.backgroundColor = chart_def.type == 'line' ? chartColorGradient(canvas, bg_color) : bg_color
         });
         this_chart.update()
         break
       case 'treemap':
         this.createContent()
         break
+      case 'countymap':
+        this.createContent()
+        break
     }
   }
-  createDropdownList(contents){
+  createDropdownList(contents)
+  {
     let list=''
-    for (let i=0; i<contents.length; ++i){
-      let item=contents[i]
-      list+=`<option ${i==0?'selected':''} value="${item}">${item}</option>`
+    for (let i = 0; i<contents.length; ++i)
+    {
+      let item = contents[i]
+      list += `<option ${i==0?'selected':''} value="${item}">${this.alias(item)}</option>`
     }
     return list
   }
-  createDropdowns(){
+  createDropdowns()
+  {
     if ('dropdowns' in this.state == false)
       return ''
     let dropdowns=this.state.dropdowns
@@ -295,9 +315,9 @@ class View_State
       ${this.createDropdownList(def.contents)}
       </select></div>`
       if(position=='left')
-      controls.prepend(dropdown_html)
+        controls.prepend(dropdown_html)
       else
-      controls.append(dropdown_html)
+        controls.append(dropdown_html)
     }
   }
   createKnobs(){
@@ -317,7 +337,7 @@ class View_State
         knob_height=50
         knob_width=50
       }
-      let knob_html=`<div class="col-2 d-flex justify-content-center mt-4 px-0"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
+      let knob_html=`<div class="col-2 d-flex justify-content-center mt-3 px-0"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
       if(knob_position=='left')
         controls.prepend(knob_html)
       else
@@ -344,8 +364,7 @@ class View_State
           </div>
         </div>
       </div>
-      <div id="${this.getId()}-controls" class="row">
-        
+      <div id="${this.getId()}-controls" class="row justify-content-between"> 
       </div>
      </div>`);
      this.createDropdowns()
@@ -404,8 +423,9 @@ class View_State
   }
   async grid()
   {
+    let cfg=this.state.tile_config
 
-    $(`#${this.getId()}`).html(`<div id="${this.getId()}-grid"></div>`)
+    $(`#${this.getId()}`).html(`<div id="${this.getId()}-grid" style="width:100%; height:${cfg.height};"></div>`)
 
     await this.serverRequest()
 
@@ -417,8 +437,8 @@ class View_State
     let req=this.state.request
     let vs_id=this.getId()
 
-    let gby_headers=itemSubstitute(req.groupbys, vs_id)
-    let val_headers=itemSubstitute(req.measures, vs_id)
+    let gby_headers = this.itemSubstitute(req.groupbys, vs_id)
+    let val_headers = this.itemSubstitute(req.measures, vs_id)
 
     let server_js=this.server_js
 
@@ -462,11 +482,15 @@ class View_State
       }
       catch(e)
       {}
-      this.object_instance=$(`#${this.getId()}`).w2grid( 
+      this.object_instance=$(`#${this.getId()}-grid`).w2grid( 
         {
           name: this.getId(),
           columns: columns,
           records: records,
+          show: {
+            toolbar: false,
+            footer: true
+          }
           // searches: searches,
         }
       );
@@ -518,7 +542,7 @@ class View_State
     let req=this.state.request
     let vs_id=this.getId()
 
-    let val_headers=itemSubstitute(req.measures, vs_id)
+    let val_headers = this.itemSubstitute(req.measures, vs_id)
 
     let server_js=this.server_js
 
@@ -550,14 +574,13 @@ class View_State
         pointRadius: 0,
         borderColor: chart_def.borderColor,
         borderWidth: 3,
-        backgroundColor: chartColorGradient(canvas, bg_color),
+        backgroundColor: chart_def.type=='line' ? chartColorGradient(canvas, bg_color) : bg_color,
         fill: true
       }
       ds.push(d)
     }
 
     this.object_instance = new Chart(ctx2, {
-      type: "line",
       data: {
         labels: labels,
         datasets: ds,
@@ -575,37 +598,18 @@ class View_State
           mode: 'index',
         },
         scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5]
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: '#b2b9bf',
-              font: {
-                size: 11,
-                family: "Open Sans",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
           x: {
             grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5]
+              drawBorder: true,
+              display: true,
+              drawOnChartArea: true,
+              drawTicks: true,
+              borderDash: [5, 5],
+              tickColor:'black'
             },
             ticks: {
               display: true,
-              color: '#b2b9bf',
+              color: '#656164',
               padding: 20,
               font: {
                 size: 11,
@@ -627,8 +631,8 @@ class View_State
 
     let vs_id=this.getId();
     let req=this.state.request;
-    let gby_headers=itemSubstitute(req.groupbys, vs_id);
-    let val_headers=itemSubstitute(req.measures, vs_id);
+    let gby_headers = this.itemSubstitute(req.groupbys, vs_id);
+    // let val_headers = this.itemSubstitute(req.measures, vs_id);
 
   
     let root = gby_headers[0]
@@ -663,7 +667,8 @@ class View_State
   }
   async treemap()
   {
-    $(`#${this.getId()}`).html(`<div id="tmap-${this.getId()}" style="position:absolute;"></div>`)
+    let treemap_div = `${this.getId()}-treemap`
+    $(`#${this.getId()}`).html(`<div id="${treemap_div}" style="position:absolute;"></div>`)
     let ht=$(`#${this.getId()}`).parent().height();
     var parent_width = $(`#${this.getId()}`).parent().width();
     var width = Math.round(parent_width*0.67);
@@ -697,10 +702,10 @@ class View_State
         .sort(function(a, b) { return b.height - a.height || b.value - a.value; });
 
     treemap(root);
-    d3.select(`#tmap-${this.getId()}`)
+    d3.select(`#${treemap_div}`)
       .html("")
 
-    d3.select(`#tmap-${this.getId()}`)
+    d3.select(`#${treemap_div}`)
       .selectAll(".node")
       .data(root.leaves())
       .enter().append("div")

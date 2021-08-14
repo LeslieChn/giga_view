@@ -1,4 +1,16 @@
 var view_states=[]
+let aliases = {
+  'beds:count'     : 'Number of Properties',
+  'price:avg'      : 'Average Price',
+  'size:avg'       : 'Average Size',
+  'prop_type'      : 'Property Type',
+  'county'         : 'County',
+  'state_code'     : 'State',
+  'city'           : 'City',
+  'postal_code'    : 'Zip Code',
+  'elevation:avg'  : 'Average Elevation',
+  'year_built:min' : 'Earliest Construction (Year)'
+}
 
 let req1 =
   {
@@ -23,7 +35,7 @@ let req3 =
   qid: "MD_AGG",
   base_dim: 'property',
   groupbys: ['?gby_option'],
-  measures: ["beds:count", "?val_option"],
+  measures: ["?val_option"],
   filters: []
 }
 
@@ -48,28 +60,28 @@ let req5 =
 let chart_def = [
   {
     yAxisID: "left",
-    type: "line",
-    backgroundColor: "#ff0000",
-    borderColor:"#ff0000"
+    type: "bar",
+    backgroundColor: "#2271b4",
+    borderColor:"#2271b4"
   },
-  {
-    yAxisID: "right",
-    type: "line",
-    backgroundColor: "#0000ff",
-    borderColor:"#0000ff"
-  } 
+  // {
+  //   yAxisID: "right",
+  //   type: "bar",
+  //   backgroundColor: "#0000ff",
+  //   borderColor:"#0000ff"
+  // } 
 ]
 
 let dropdowns = {
   gby_option:{
     name:'Groupby',
-    contents:['prop_type','state_code', 'postal_code', 'city', 'prop_status'],
+    contents:['prop_type','state_code', 'postal_code', 'city', 'county'],
     position:'left',
     knob_position:'left'
   },
   val_option:{
     name:'Value',
-    contents:['size:avg', 'price:avg'],
+    contents: ['beds:count','size:avg', 'price:avg', 'elevation:avg', 'year_built:min'],
     position:'right',
     knob_position:'right'
   }
@@ -79,18 +91,20 @@ let dropdowns = {
 let dropdowns2 = {
   col_option:{
     name:'Color',
-    contents:['red', 'blue','green','grey']
+    contents:['red', 'blue','green','grey'],
+    knob_position:'left'
   },
   val_option:{
     name:'Value',
-    contents:['size:avg', 'price:avg']
+    contents: ['beds:count','size:avg', 'price:avg', 'elevation:avg', 'year_built:min'],
+    knob_position:'right'
   }
 }
 
-let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: chart_def, dropdowns:dropdowns,  tile_config: {header: `Treemap`, subheader: `This is a Treemap`, height:'65vh', width:12}},
-{id:'line-chart1', view_type:'chart',  view_subtype:'lineChart', request: req3, dropdowns:dropdowns, chart_def: chart_def, tile_config: {header: `Line Chart`, subheader: `this is a Line Chart`, height:'65vh', width:12}},
-{id:'grid1', view_type:'grid', request: req3, dropdowns:dropdowns, tile_config: {header: `Grid`, subheader: `This is a Grid`, height:'65vh', width:12}},
-{id:'countymap1', view_type:'countymap', request: req5, dropdowns:dropdowns2, color_scheme:"?col_option",  tile_config: {header: `CountyMap`, subheader: `This is a CountyMap`, height:'65vh', width:12}}]
+let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: chart_def, dropdowns:dropdowns, aliases:aliases,  tile_config: {header: `Treemap`, subheader: `This is a Treemap`, height:'60vh', width:12}},
+{id:'line-chart1', view_type:'chart',  view_subtype:'barChart', request: req3, dropdowns:dropdowns, aliases:aliases, chart_def: chart_def, tile_config: {header: `Line Chart`, subheader: `this is a Line Chart`, height:'60vh', width:12}},
+{id:'grid1', view_type:'grid', request: req3, dropdowns:dropdowns, aliases:aliases, tile_config: {header: `Grid`,  subheader: `This is a Grid`, height:'60vh', width:12}},
+{id:'countymap1', view_type:'countymap', request: req5, dropdowns:dropdowns2, color_scheme:"?col_option", aliases:aliases,  tile_config: {header: `CountyMap`, subheader: `This is a CountyMap`, height:'60vh', width:12}}]
 
 
 const ps = new PerfectScrollbar('.main-content')
@@ -121,13 +135,14 @@ function refreshTiles(){
   selected_vs.refresh()
 }
 
-$(".form-select").on("change", function ()
+function formSelectCallBack ()
  {
   let index = $(this).prop('selectedIndex');
   let knob_id =  $(this).attr('data-knob')
   $("#"+ knob_id).val(index)
+  console.log(getKnob(knob_id))
   getKnob(knob_id).changed(0)
-})
+}
 
 function viewChangeCallback () 
 {
@@ -137,6 +152,7 @@ function viewChangeCallback ()
   selected_vs=view_states[index]
   selected_vs.createTile()
   $(".p1").on("change", controlsChangeCallback)
+  $(".form-select").on("change", formSelectCallBack)
 }
 
 function controlsChangeCallback () 
@@ -149,6 +165,7 @@ function controlsChangeCallback ()
 
 $(".p1").on("change", controlsChangeCallback)
 $(".p2").on("change", viewChangeCallback)
+$(".form-select").on("change", formSelectCallBack)
 
 $(document).ready();
 $(window).resize(refreshTiles);

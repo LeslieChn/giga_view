@@ -2,6 +2,7 @@ body
 {
     background-color: rgb(155, 0, 31);
     overflow: hidden;
+    color: #656164
 }
 
 #main-content
@@ -28,7 +29,8 @@ body
 #logo-text {
   font-family: 'Fira Sans', sans-serif;
   color: white;
-  text-shadow: 1px 1px 2px rgb(182, 182, 182);
+  /* text-shadow: 1px 1px 2px rgb(182, 182, 182); */
+  text-shadow: 1px 1px 3px gold;
   font-weight: bold;
   font-size: 1.5rem;
 }

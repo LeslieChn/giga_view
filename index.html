@@ -40,26 +40,26 @@
   <main class="main-content position-relative max-height-vh-100 h-100">
     <div class="container">
       <div id="main-header" class="row justify-content-center mt-3">
-        <div class='col'>
+        <div class='col-6'>
           <a id="logotext" class="mx-auto" href="/">
-            <img id="logo" src="./assets/img/logo_sun.svg" class="" width="60" height="40"><span id="logo-text" class="align-middle">GigaRoll</span>
+            <!-- <img id="logo" src="./assets/img/logo_sun.svg" class="" width="60" height="40"><span id="logo-text" class="align-middle">GigaRoll</span> -->
+            <span id="logo-text" class="align-middle">GigaRoll</span>
           </a> 
        </div>
-        <div id='vs-column' class="col text-center px-4">
-          <h6 class="mb-1 text-white">Views</h6>
+        <div id='vs-column' class="col-6">
           <div class='row'>
-            <div class='col'>
+            <div class='col-8 px-sm-3 px-1 mt-2 text-center'>
+              <h6 class="mb-1 text-white">Views</h6>
               <select id='view-select' class="form-select form-select-sm pt-0" data-tile-id="" data-knob='view-knob' aria-label="view select"></select>
             </div>
-            <div class='col'>
+            <div class='col-4 d-flex justify-content-center mb-2 px-0'>
               <input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="100" data-height="100" data-angleOffset="220" data-angleRange="280"></div>
             </div>
           </div>
-        </div>
       </div>
-      <div id="main-panel" class="row px-3 py-1">
+      <div id="main-panel" class="row">
       </div>
-   </div>
+    </div>
   </main>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBt1YAVs6NKSAMs35eLlxthP24i_r7nnhk&libraries=visualization,geometry,drawing&v=weekly"></script>
 <!-- Plugin for the charts, full documentation here: https://www.chartjs.org/ -->
