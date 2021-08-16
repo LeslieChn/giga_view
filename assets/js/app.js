@@ -151,7 +151,9 @@ function createVsKnob(labels) {
 function refreshTiles(){
   selected_vs.refresh()
   createVsKnob(this.labels)
+  $(".p1").on("change", controlsChangeCallback)
   $(".p2").on("change", viewChangeCallback)
+  $(".form-select").on("change", formSelectCallBack)
 }
 
 function formSelectCallBack ()
