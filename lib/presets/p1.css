@@ -18,7 +18,7 @@
   fill: gray;
   font-family: 'Times New Roman', Times, serif;
   font-weight: 600;
-  text-indent: 20px;
+  /* text-indent: 20px; */
   /* font-smooth: always; */
   /* transition: all .1s ease-in-out; */
 }

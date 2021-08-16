@@ -328,7 +328,7 @@ Ui.Scale.prototype.dial = function() {
   this.dials = [];
   if(!this.options.labels){
     for (var i = 0; i < end; i++) {
-      var text = new Ui.El.Text(Math.abs(min + dialStep * i), this.width / 2 - 2.5,
+      var text = new Ui.El.Text(Math.abs(min + dialStep * i), this.width / 2 /*- 2.5*/,
         this.height / 2 - this.options.radius, 5, 5);
       this.el.append(text);
       text.rotate(this.startAngle + i * step, this.width / 2, this.height / 2);
@@ -338,7 +338,7 @@ Ui.Scale.prototype.dial = function() {
     step = this.options.anglerange / (this.options.labels.length-1);
     for(var i=0; i<this.options.labels.length; i++){
       var label = this.options.labels[i];
-      var text = new Ui.El.Text(label, this.width / 2 - 2.5,
+      var text = new Ui.El.Text(label, this.width / 2 /*- 2.5*/,
         this.height / 2 - this.options.radius, 5, 5);
       this.el.append(text);
       text.rotate(this.startAngle + i * step, this.width / 2, this.height / 2);
