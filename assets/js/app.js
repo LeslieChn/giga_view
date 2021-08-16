@@ -109,7 +109,7 @@ let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: cha
 {id:'countymap1', view_type:'countymap', request: req5, dropdowns:dropdowns2, color_scheme:"?col_option", aliases:aliases,  tile_config: {header: `CountyMap`, subheader: `This is a CountyMap`, height:'60vh', width:12}}]
 
 
-const ps = new PerfectScrollbar('.main-content')
+const ps = new PerfectScrollbar('#main-container')
 
 var input=document.getElementById(`view-knob`)
 
@@ -129,23 +129,23 @@ for (let view of view_def)
 selected_vs=view_states[0]
 selected_vs.createTile()
 
-vs_knob=createVsKnob(labels)
+createVsKnob(labels)
 
 function createVsKnob(labels) {
-  vs_knob=null
-  let client_width=document.documentElement.clientWidth
-  let knob_height=100
-  let knob_width=100
-  if (client_width<1024)
+  vs_knob = null
+  let client_width = document.documentElement.clientWidth
+  let knob_height = 100
+  let knob_width = 100
+  if (client_width < 1024)
   {
-    knob_height=75
-    knob_width=75
+    knob_height = 75
+    knob_width = 75
   }
   $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
   let input=document.getElementById(`view-knob`)
-  input.value=0
-  input.dataset.labels=labels
-  return new Knob(input, new Ui.P1({}))
+  input.value = 0
+  input.dataset.labels = labels
+  vs_knob = new Knob(input, new Ui.P1({}))
 }
 
 function refreshTiles(){
