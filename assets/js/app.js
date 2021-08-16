@@ -92,11 +92,13 @@ let dropdowns2 = {
   col_option:{
     name:'Color',
     contents:['red', 'blue','green','grey'],
+    position:'left',
     knob_position:'left'
   },
   val_option:{
     name:'Value',
     contents: ['beds:count','size:avg', 'price:avg', 'elevation:avg', 'year_built:min'],
+    position:'right',
     knob_position:'right'
   }
 }
@@ -111,7 +113,7 @@ const ps = new PerfectScrollbar('.main-content')
 
 var input=document.getElementById(`view-knob`)
 
-let labels=[]
+var labels=[]
 
 for (let view of view_def)
 {
@@ -122,17 +124,34 @@ for (let view of view_def)
   labels.push('.')
 }
 
-input.dataset.labels=labels
+
 
 selected_vs=view_states[0]
 selected_vs.createTile()
 
-input.value=0
-vs_knob=new Knob(input, new Ui.P1({}))
+vs_knob=createVsKnob(labels)
 
+function createVsKnob(labels) {
+  vs_knob=null
+  let client_width=document.documentElement.clientWidth
+  let knob_height=100
+  let knob_width=100
+  if (client_width<1024)
+  {
+    knob_height=75
+    knob_width=75
+  }
+  $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
+  let input=document.getElementById(`view-knob`)
+  input.value=0
+  input.dataset.labels=labels
+  return new Knob(input, new Ui.P1({}))
+}
 
 function refreshTiles(){
   selected_vs.refresh()
+  createVsKnob(this.labels)
+  $(".p2").on("change", viewChangeCallback)
 }
 
 function formSelectCallBack ()

@@ -262,6 +262,7 @@ class View_State
   {
     let type=this.state.view_type
     let vs_id=this.getId()
+    this.createKnobs()
     switch(type)
     {
       case 'grid':
@@ -321,6 +322,7 @@ class View_State
     }
   }
   createKnobs(){
+    $('.knob-column').remove()
     if ('dropdowns' in this.state == false)
       return ''
     let dropdowns=this.state.dropdowns
@@ -334,10 +336,10 @@ class View_State
       let knob_width=100
       if (client_width<1024)
       {
-        knob_height=50
-        knob_width=50
+        knob_height=75
+        knob_width=75
       }
-      let knob_html=`<div class="col-2 d-flex justify-content-center mt-3 px-0"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
+      let knob_html=`<div class="col-2 d-flex justify-content-center mt-3 px-0 knob-column"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
       if(knob_position=='left')
         controls.prepend(knob_html)
       else
