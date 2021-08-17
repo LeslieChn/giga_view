@@ -745,278 +745,412 @@ class View_State
       
     }
 
-    async getCountyData(){
-      let state_code_from_name =
-      { CT: "09", NY: "36", NJ: "34", MA: "25" }
-  
-  
-      await this.serverRequest()
-      let server_js = this.server_js
-  
-      let value_idx = 0
-      let min = Infinity, max = -Infinity
-      let lut = {}
-      for (let row of server_js)
-      {
-          let c = row[0][0]
-          let state = c.substring(c.length - 2)
-          let county = c.substring(0, c.length - 3)
-          let code = state_code_from_name[state]
-          if (lut[code] == null)
-          {
-              lut[code] = {}
-          }
-          let value = row[1][value_idx]
-          max = Math.max(value, max)
-          min = Math.min(value, min)
-          lut[code][county] = value
-      }
-      return { lut: lut, max: max, min: min }
-  
-    }
-  
-    async countymap()
+  async getCountyData(){
+    let state_code_from_name =
+    { CT: "09", NY: "36", NJ: "34", MA: "25" }
+
+
+    await this.serverRequest()
+    let server_js = this.server_js
+
+    let value_idx = 0
+    let min = Infinity, max = -Infinity
+    let lut = {}
+    for (let row of server_js)
     {
-      let result = await this.getCountyData();
+        let c = row[0][0]
+        let state = c.substring(c.length - 2)
+        let county = c.substring(0, c.length - 3)
+        let code = state_code_from_name[state]
+        if (lut[code] == null)
+        {
+            lut[code] = {}
+        }
+        let value = row[1][value_idx]
+        max = Math.max(value, max)
+        min = Math.min(value, min)
+        lut[code][county] = value
+    }
+    return { lut: lut, max: max, min: min }
 
-      if (selected_vs && this!==selected_vs)
-      {
-        return 
-      } 
+  }
 
-      let county_data = result.lut;
-      let max_data = result.max;
-      let min_data = result.min;
-      let first_map_draw = true
-      let state_codes = new Set(["09", "34", "36"])
-      var g = null;
-      var path = null;
-      var svg = null;
-      let colors = [];
-      let num_colors = 12;
-      let geoScope = null;
-      let scheme = this.getColorScheme();
-      var tooltipDiv = d3.select("#d3map").append("div")
+  async setCountymap(mapDiv,legendDiv)
+  {
+    let result = await this.getCountyData();
+
+    if (selected_vs && this!==selected_vs)
+    {
+      return 
+    } 
+
+    let county_data = result.lut;
+  let max_data = result.max;
+  let min_data = result.min;
+  let first_map_draw = true
+  let state_codes = new Set(["09", "34", "36"])
+  var g = null;
+  var path = null;
+  var svg = null;
+  let colors = [];
+  let num_colors = 12;
+  let geoScope = null;
+  let scheme = this.getColorScheme();
+  var tooltipDiv;
+  let name_from_state_code =
+  { "09": "CT", "36": "NY", "34": "NJ", "25": "MA" }
+
+  for (let i = 0; i <= num_colors; ++i)
+      colors.push(scheme(i / num_colors));
+
+  let domain = [],
+      m1,
+      m2;
+  if (min_data <= 0 && max_data <= 0)
+  {
+      m1 = min_data == 0 ? -1 : min_data + 0.5;
+      m2 = max_data == 0 ? -1 : max_data;
+      let r = (m2 / m1) ** (1 / (num_colors));
+
+      for (let x = m1; x <= m2; x *= r)
+          domain.push(x);
+  }
+  else if (min_data >= 0 && max_data >= 0) 
+  {
+      m1 = min_data == 0 ? 1 : min_data + 0.5;
+      m2 = max_data == 0 ? 1 : max_data;
+      let r = (m2 / m1) ** (1 / (num_colors));
+
+      for (let x = m1; x <= m2; x *= r)
+          domain.push(x);
+  }
+  else 
+  {
+      m1 = min_data;
+      m2 = max_data;
+
+      domain.push(min_data + 0.5);
+      let r = max_data ** (1 / (num_colors - 1));
+
+      for (let x = 1; x <= max_data; x *= r)
+          domain.push(x);
+  }
+  var color = d3
+      .scaleThreshold()
+      .domain(domain)
+      .range(colors);
+
+  var width = $(`#${mapDiv}`).width(),
+      height = $(`#${mapDiv}`).height(),
+      centered;
+
+  if (first_map_draw)
+  {
+    first_map_draw = false;
+
+    var projection = d3.geoIdentity().reflectY(false);
+    
+    path = d3
+        .geoPath() // updated for d3 v4
+        .projection(projection);
+
+    d3.select(`#${mapDiv}`)
+    .html("")
+    
+    tooltipDiv = d3.select(`#${mapDiv}`).append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
-      let name_from_state_code =
-      { "09": "CT", "36": "NY", "34": "NJ", "25": "MA" }
-  
-      for (let i = 0; i <= num_colors; ++i)
-          colors.push(scheme(i / num_colors));
-  
-      let domain = [],
-          m1,
-          m2;
-      if (min_data <= 0 && max_data <= 0)
-      {
-          m1 = min_data == 0 ? -1 : min_data + 0.5;
-          m2 = max_data == 0 ? -1 : max_data;
-          let r = (m2 / m1) ** (1 / (num_colors));
-  
-          for (let x = m1; x <= m2; x *= r)
-              domain.push(x);
-      }
-      else if (min_data >= 0 && max_data >= 0) 
-      {
-          m1 = min_data == 0 ? 1 : min_data + 0.5;
-          m2 = max_data == 0 ? 1 : max_data;
-          let r = (m2 / m1) ** (1 / (num_colors));
-  
-          for (let x = m1; x <= m2; x *= r)
-              domain.push(x);
-      }
-      else 
-      {
-          m1 = min_data;
-          m2 = max_data;
-  
-          domain.push(min_data + 0.5);
-          let r = max_data ** (1 / (num_colors - 1));
-  
-          for (let x = 1; x <= max_data; x *= r)
-              domain.push(x);
-      }
-      var color = d3
-          .scaleThreshold()
-          .domain(domain)
-          .range(colors);
-  
-      var width = $(`#${this.getId()}`).parent().width(),
-          height = $(`#${this.getId()}`).parent().height(),
-          centered,
-          dd;
-  
-      if (first_map_draw)
-      {
-        first_map_draw = false;
-  
-        var projection = d3.geoIdentity().reflectY(false);
-        
-        path = d3
-            .geoPath() // updated for d3 v4
-            .projection(projection);
-  
-        d3.select(`#${this.getId()}`)
-        .html("")
-  
-        svg = d3
-            .select(`#${this.getId()}`)
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .on("click", stopped, true);
-  
-        svg
-            .append("rect")
-            .attr("class", "background")
-            .attr("width", width)
-            .attr("height", height)
-            .on("click", mapReset);
-        
-        g = svg.append("g");
-      }
-  
-  
-  
-      
-      d3.json("./assets/data/map_us_counties.json", function (error, us)
-      {
-          if (error) throw error;
-          let states = topojson.feature(us, us.objects.states).features;
-          let states_filtered = states.filter((d) => state_codes.has(d.id));
-          let geoScope = {"type":"FeatureCollection","features":states_filtered};
-          let county_features = topojson.feature(us, us.objects.counties).features;
-          let county_filtered = county_features.filter((d) =>
-              state_codes.has(d.id.substring(0, 2)));
-  
-          projection.fitSize([width - 20, height - 20], geoScope);
-  
-          g.selectAll("path")
-              .data(states_filtered)
-              .enter()
-              .append("path")
-              .attr("d", path)
-              .attr("class", "feature");
-  
-          g.append("path")
-              .datum(
-                  topojson.mesh(us, us.objects.states, function (a, b)
-                  {
-                      if (!state_codes.has(a.id) && !state_codes.has(b.id))
-                          return false;
-                      else
-                          return true;
-                  })
-              )
-              .attr("class", "mesh")
-              .attr("d", path);
-  
-  
-          g.append("g")
-              .attr("class", "counties")
-              .selectAll("path")
-              .data(county_filtered)
-              .enter()
-              .append("path")
-              .attr("d", path)
-              .attr("style", function (d)
-              {
-                  let code = d.id.substring(0, 2);
-                  if (!state_codes.has(code))
-                  {
-                      return "fill: #000";
-                  }
-                  let s = parseInt(code);
-                  let county = d.properties.name;
-                  let value = county_data[code][county];
-                  return `fill:${color(value)}; `;
-              })
-              .on("click", mapClicked)
-              .on("mouseover", hovered)
-              // .on("mousemove", moved)
-              // .on("mouseout", mouseOuted);
-            g.append("path")
-                .attr("class", "county-borders")
-                .attr(
-                    "d",
-                    path(
-                        topojson.mesh(us, us.objects.counties, function (a, b)
-                        {
-                            let aCode = a.id.substring(0, 2);
-                            let bCode = b.id.substring(0, 2);
-  
-                            if (!state_codes.has(aCode) || !state_codes.has(bCode))
-                                return false;
-                            else return a !== b;
-                        })
-                    )
-            );
-            function mapClicked(d) {
-              centered = centered !== d && d;
-        
-              var paths = svg.selectAll("path")
-                .classed("active", d => d === centered);
-        
-              var t0 = projection.translate(),
-                s0 = projection.scale();
-        
-              projection.fitSize([width - 20, height - 20], centered || geoScope);
-        
-              var interpolateTranslate = d3.interpolate(t0, projection.translate()),
-              interpolateScale = d3.interpolate(s0, projection.scale());
-        
-              var interpolator = function(t) {
-                projection.scale(interpolateScale(t))
-                  .translate(interpolateTranslate(t));
-                paths.attr("d", path);
-              }; 
-          
-              d3.transition()
-                .duration(750)
-                .tween("projection", function() {
-                 return interpolator;
-              });
-            }
-            function hovered(d)
-            { 
-              let code = d.id.substring(0, 2)
-              let state = name_from_state_code[code]
-              if (!state_codes.has(code))
-                  return
-        
-              let county = d.properties.name
-              let value = county_data[code][county]
-              // let idx = color.range().indexOf(color(value))
-              // let rect_id = `#rect_${idx}`
-        
-              // let x = parseInt(d3.select(rect_id).attr("x"))
-              // let height = parseInt(d3.select(rect_id).attr("height"))
-              // let width = parseInt(d3.select(rect_id).attr("width"))
-              
-              // var g = svg.append("g")
-              // .attr("transform", "translate(0,40)");
-              
-              // d3.select(".key")
-              //     .append("line")   
-              //     .attr("id", "overline")
-              //     .attr("x1", x)
-              //     .attr("y1", -5)
-              //     .attr("x2", x + width)
-              //     .attr("y2", -5)
-              //     .attr("style", `stroke:black;stroke-width:4`)  
+
+    svg = d3
+        .select(`#${mapDiv}`)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .on("click", stopped, true);
+
+    svg
+        .append("rect")
+        .attr("class", "background")
+        .on("click", mapReset);
     
-              tooltipDiv
-                  .style("opacity", 0.9);
-              tooltipDiv.html(`${county} ${state} <br> ${value}`)
-                  .style("left", (d3.event.layerX + 20) + "px")
-                  .style("top", (d3.event.layerY + 20) + "px");
-            }      
-      });
+    g = svg.append("g");
+  }
+  d3.json("./assets/data/map_us_counties.json", function (error, us)
+  {
+      if (error) throw error;
+      let states = topojson.feature(us, us.objects.states).features;
+      let states_filtered = states.filter((d) => state_codes.has(d.id));
+      let geoScope = {"type":"FeatureCollection","features":states_filtered};
+      let county_features = topojson.feature(us, us.objects.counties).features;
+      let county_filtered = county_features.filter((d) =>
+          state_codes.has(d.id.substring(0, 2)));
+
+      projection.fitSize([width, height - 20], geoScope);
+
+      g.selectAll("path")
+          .data(states_filtered)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("class", "feature");
+
+      g.append("path")
+          .datum(
+              topojson.mesh(us, us.objects.states, function (a, b)
+              {
+                  if (!state_codes.has(a.id) && !state_codes.has(b.id))
+                      return false;
+                  else
+                      return true;
+              })
+          )
+          .attr("class", "mesh")
+          .attr("d", path);
+
+      g.append("g")
+          .attr("class", "counties")
+          .selectAll("path")
+          .data(county_filtered)
+          .enter()
+          .append("path")
+          .attr("d", path)
+          .attr("style", function (d)
+          {
+              let code = d.id.substring(0, 2);
+              if (!state_codes.has(code))
+              {
+                  return "fill: #000";
+              }
+              let s = parseInt(code);
+              let county = d.properties.name;
+              let value = county_data[code][county];
+              return `fill:${color(value)}; `;
+          })
+          .on("click", mapClicked)
+          .on("mouseover", hovered)
+          .on("mousemove", moved)
+          .on("mouseout", mouseOuted);
+
+        g.append("path")
+            .attr("class", "county-borders")
+            .attr(
+                "d",
+                path(
+                    topojson.mesh(us, us.objects.counties, function (a, b)
+                    {
+                        let aCode = a.id.substring(0, 2);
+                        let bCode = b.id.substring(0, 2);
+
+                        if (!state_codes.has(aCode) || !state_codes.has(bCode))
+                            return false;
+                        else return a !== b;
+                    })
+                )
+        );
+        showLegend(color, m1, m2)
+
+        function mapClicked(d) {
+          centered = centered !== d && d;
+    
+          var paths = svg.selectAll("path")
+            .classed("active", d => d === centered);
+    
+          var t0 = projection.translate(),
+            s0 = projection.scale();
+    
+          projection.fitSize([width - 20, height - 20], centered || geoScope);
+    
+          var interpolateTranslate = d3.interpolate(t0, projection.translate()),
+          interpolateScale = d3.interpolate(s0, projection.scale());
+    
+          var interpolator = function(t) {
+            projection.scale(interpolateScale(t))
+              .translate(interpolateTranslate(t));
+            paths.attr("d", path);
+          }; 
       
-      function mapReset(){
-      }
-    }
+          d3.transition()
+            .duration(750)
+            .tween("projection", function() {
+              return interpolator;
+          });
+        }
+
+        function showLegend(color, min, max,)
+        {
+                  
+            let n_divs = color.range().length;
+        
+            var client_width = document.getElementById(legendDiv).clientWidth
+            let legend_width = client_width / 3
+            let left_margin = client_width  /2  -20
+            let rect_width = legend_width / n_divs
+
+            let rect_idx = 0;
+            let rect_id = 0;
+            var client_height = document.getElementById(legendDiv).clientHeight
+            let legend_height = client_height * 0.8 
+            let top_margin = client_height *0.1
+            let rect_height = legend_height / n_divs
+            
+            var svg
+            svg =  d3.select(`#${legendDiv}`)
+            .html('')
+            .append("svg")
+            .attr("width", client_width)
+            .attr("height", client_height);
+            // let rectPos = (i) => left_margin + i * rect_width;
+            let rectPos = (i) => top_margin + i * rect_height;
+        
+            var g = svg.append("g")
+                .attr("class", "key")
+                .attr("transform", "translate(0,0)");
+        
+            g.selectAll("rect")
+                .data(color.range().map((d) => rect_idx++ ) )
+                .enter().append("rect")
+                .attr("height", rect_height)
+                .attr("x", left_margin)
+                .attr("y", d => rectPos(d))
+                .attr("width", 20)
+                .attr("fill", function (d) { return color.range()[d] })
+                .attr("id", d => `rect_${rect_id++}`)
+        
+            // let toolbar = w2ui.layout.get('top').toolbar
+            // let id = toolbar.get("values").selected
+            // let text = toolbar.get(`values:${id}`).text
+            // let text = "country map for now "
+        
+            // g.append("text")
+            //     .attr("id", "caption")
+            //     .attr("x", -200) 
+            //     .attr("y", 12)
+            //     .attr("fill", "#000")
+            //     .attr("text-anchor", "start")
+            //     .attr("font-weight", "bold")
+            //     .text("country map for now");
+        
+            // let text_pixels = document.getElementById("caption").getComputedTextLength()
+            // g.select("#caption")
+            //     .attr("x", left_margin - text_pixels - 20);
+        
+            // Create the tickmarks
+            let vals = [[min,0]]
+            for (let j = 1; j < 4; ++j)
+            {
+                //let idx = Math.floor(j * n_divs / 4)
+                let val_idx = Math.floor(j * (color.domain().length) / 4);
+                let val = color.domain()[val_idx]
+                let idx = color.range().indexOf(color(val))
+                vals.push([val, idx]);
+            }
+            vals.push([max, n_divs])
+        
+            for (let val of vals)
+            {
+                g.append("text")
+                    .attr("y", rectPos(val[1]) + 3)
+                    .attr("x", left_margin + 30)
+                    .attr("class", "ldegree")
+                    .attr("fill", "#000")
+                    .attr("style", "font-size: 60%")
+                    .text(Math.round(10*val[0])/10);
+            }
+        
+            for (let i = 0; i <= n_divs; ++i)
+            {
+                let width = 20, height = 1;
+                if (i % 4 == 0)
+                {
+                    width = 22;
+                    height = 2;
+                }
+                g.append('line')
+                    .style("stroke", "black")
+                    .style("stroke-width", height)
+                    .attr("x1", left_margin)
+                    .attr("y1", rectPos(i))
+                    .attr("x2", left_margin + width)
+                    .attr("y2", rectPos(i)); 
+            }
+              
+        }
+
+        function hovered(d)
+        { 
+          let code = d.id.substring(0, 2)
+          let state = name_from_state_code[code]
+          if (!state_codes.has(code))
+              return
+    
+          let county = d.properties.name
+          let value = county_data[code][county]
+          let idx = color.range().indexOf(color(value))
+          let rect_id = `#rect_${idx}`
+          let lx = parseInt(d3.select(rect_id).attr("x"))
+          let ly = parseInt(d3.select(rect_id).attr("y"))
+          let height = parseInt(d3.select(rect_id).attr("height"))
+          
+          var g = svg.append("g")
+          .attr("transform", "translate(0,40)");
+      
+          d3.select(".key")
+              .append("line")   
+              .attr("id", "overline")
+              .attr("x1", lx)
+              .attr("y1", ly)
+              .attr("x2", lx)
+              .attr("y2", ly + height)
+              .attr("style", `stroke:black;stroke-width:2`)
+
+          tooltipDiv
+              .style("opacity", 0.9);
+          tooltipDiv.html(`${county} ${state} <br> ${value}`)
+              .style("left", (d3.event.layerX + 20) + "px")
+              .style("top", (d3.event.layerY + 20) + "px");
+
+          console.log(d3.event)
+
+          console.log(tooltipDiv._groups[0][0].style.left, " ", tooltipDiv._groups[0][0].style.top)
+        }
+        
+        function moved(d)
+        {
+          tooltipDiv
+              .style("left", (d3.event.layerX + 20) + "px")
+              .style("top", (d3.event.layerY + 20) + "px");
+        }
+        function mouseOuted(d)
+        {
+          tooltipDiv.style("opacity", 0);
+
+
+            d3.select("#overline")
+                .remove();
+              
+
+        }
+  });
+  
+  function mapReset(){
+    console.log("reset")
+  }
+  }
+  async countymap(){
+    
+    let container = this.getId()
+    let legendDiv = container + "Legend"
+    let mapDiv = container + "Map"
+    $(`#${container}`).html(`
+    <div class="row" style="height: 100%">
+      <div id="${legendDiv}" class="col-2 p-0" style="background-color: #ddd; border-style: solid;">
+      </div>
+      <div id="${mapDiv}-column" class="col-10">
+        <div id="${mapDiv}" style='position:relative;height:100%;'></div>
+      </div>
+    </div>`)
+    this.setCountymap(mapDiv,legendDiv)
+  }
     
 }//end of Class definition
 
