@@ -640,6 +640,7 @@ progress {
   color: #6c757d;
 }
 
+
 .container,
 .container-fluid,
 .container-sm,
@@ -654,7 +655,8 @@ progress {
   margin-left: auto;
 }
 
-/* @media (min-width: 576px) {
+/* 
+ @media (min-width: 576px) {
 
   .container,
   .container-sm {

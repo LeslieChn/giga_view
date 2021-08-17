@@ -36,6 +36,7 @@
   }
   
   div.tooltip {   
+      color: black;
       position: absolute;         
       text-align: center;    
       /*     
