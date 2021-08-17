@@ -131,7 +131,10 @@ selected_vs.createTile()
 
 createVsKnob(labels)
 
-function createVsKnob(labels) {
+function createVsKnob(labels) 
+{
+  if(vs_knob != null)
+    vs_knob.removeEventListeners()
   vs_knob = null
   let client_width = document.documentElement.clientWidth
   let knob_height = 100
@@ -151,12 +154,12 @@ function createVsKnob(labels) {
 function refreshTiles(){
   selected_vs.refresh()
   createVsKnob(this.labels)
-  $(".p1").on("change", controlsChangeCallback)
-  $(".p2").on("change", viewChangeCallback)
-  $(".form-select").on("change", formSelectCallBack)
+  $(".p1").on("change", controlsKnobChangeCallback)
+  $(".p2").on("change", viewKnobChangeCallback)
+  $(".controls-select").on("change", controlsDropdownCallBack)
 }
 
-function formSelectCallBack ()
+function viewsDropdownCallBack ()
  {
   let index = $(this).prop('selectedIndex');
   let knob_id =  $(this).attr('data-knob')
@@ -165,28 +168,42 @@ function formSelectCallBack ()
   getKnob(knob_id).changed(0)
 }
 
-function viewChangeCallback () 
+
+function viewKnobChangeCallback () 
 {
   let dd_id = '#' + $(this).attr('data-dropdown')
   let index = $(this).val();
   $(dd_id).prop('selectedIndex', index);
   selected_vs=view_states[index]
   selected_vs.createTile()
-  $(".p1").on("change", controlsChangeCallback)
-  $(".form-select").on("change", formSelectCallBack)
+  $(".p1").on("change", controlsKnobChangeCallback)
+  $(".controls-select").on("change", controlsDropdownCallBack)
+  console.log('views knob callback')
 }
 
-function controlsChangeCallback () 
+function controlsDropdownCallBack ()
+ {
+  let index = $(this).prop('selectedIndex');
+  let knob_id =  $(this).attr('data-knob')
+  $("#"+ knob_id).val(index)
+  console.log(getKnob(knob_id))
+  getKnob(knob_id).changed(0)
+}
+
+
+function controlsKnobChangeCallback () 
 {
   let dd_id = '#' + $(this).attr('data-dropdown')
   let index = $(this).val();
   $(dd_id).prop('selectedIndex', index);
+  console.log('controls knob callback')
   selected_vs.createContent()
 }
 
-$(".p1").on("change", controlsChangeCallback)
-$(".p2").on("change", viewChangeCallback)
-$(".form-select").on("change", formSelectCallBack)
+$(".p1").on("change", controlsKnobChangeCallback)
+$(".p2").on("change", viewKnobChangeCallback)
+$(".controls-select").on("change", controlsDropdownCallBack)
+$("#view-select").on("change", viewsDropdownCallBack)
 
 $(document).ready();
 $(window).resize(refreshTiles);

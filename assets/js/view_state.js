@@ -312,7 +312,7 @@ class View_State
     {
       let controls=$(`#${this.getId()}-controls`)
       let position='position' in def? def.position:'right'
-      let dropdown_html=`<div id=${id}-${this.getId()}-column class="col-sm-3 col-4 px-sm-3 px-1 mt-4 text-center m${position=='left'?'e':'s'}-auto"><h6 class="mb-1 text-white">${def.name}</h6><select id=${id}-${this.getId()} class="form-select form-select-sm pt-0" data-tile-id="${this.getId()}" data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
+      let dropdown_html=`<div id=${id}-${this.getId()}-column class="col-sm-3 col-4 px-sm-3 px-1 mt-4 text-center m${position=='left'?'e':'s'}-auto"><h6 class="mb-1 text-white">${def.name}</h6><select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" data-tile-id="${this.getId()}" data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
       ${this.createDropdownList(def.contents)}
       </select></div>`
       if(position=='left')
@@ -326,6 +326,10 @@ class View_State
     if ('dropdowns' in this.state == false)
       return ''
     let dropdowns=this.state.dropdowns
+    for (const [id, instance] of Object.entries(knob_objects))
+    {
+      instance.removeEventListeners()
+    }
     knob_objects={}
     for (const [id, def] of Object.entries(dropdowns))
     {
