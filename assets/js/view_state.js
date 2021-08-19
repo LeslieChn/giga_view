@@ -319,7 +319,7 @@ class View_State
     {
       let controls=$(`#${this.getId()}-controls`)
       let position='position' in def? def.position:'bottom-right'
-      let dropdown_html=`<div id=${id}-${this.getId()}-column class="${position=='top-left'?'col-sm-6 col-8':'col-sm-3 col-4'} px-sm-3 px-1 mt-3 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column"><h6 class="mb-1 text-white">${def.name}</h6><select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" data-tile-id="${this.getId()}" data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
+      let dropdown_html=`<div id=${id}-${this.getId()}-column class="${position=='top-left'?'col-sm-6 col-8 mt-2':'col-sm-3 col-4 mt-3'} px-sm-3 px-1 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column"><h6 class="mb-1 text-white">${def.name}</h6><select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" data-tile-id="${this.getId()}" data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
       ${this.createDropdownList(def.contents)}
       </select></div>`
       if(position=='bottom-left')

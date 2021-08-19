@@ -7,7 +7,7 @@ body
 
 #main-container
 {
-    overflow: hidden;
+    overflow: hidden!important;
 }
 
 
