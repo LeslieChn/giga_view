@@ -214,7 +214,7 @@ class View_State
   {
     const mapObj = {
       '<': "&lt",
-      '>': "&rt",
+      '>': "&gt",
     };
     name=name.replace(/\b(?:<|>)\b/gi, matched => mapObj[matched]);
     if (!('aliases' in this.state) || !(name in this.state.aliases))
