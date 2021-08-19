@@ -432,7 +432,8 @@ class View_State
    }
    googlemap()
   {
-    try{
+    try
+    {
     let map = new google.maps.Map(document.getElementById(this.getId()), {
       fullscreenControl: false,
       zoom: 8,
@@ -441,7 +442,9 @@ class View_State
     });
     }
     catch(e)
-    {console.log(e)}
+    {
+      console.log(e)
+    }
 
   }
   async grid()
@@ -530,7 +533,6 @@ class View_State
     }
     catch(e)
     {
-      console.log('Error!!!')
       console.log(e)
     }
   }
@@ -826,7 +828,7 @@ class View_State
         m2;
     if (min_data <= 0 && max_data <= 0)
     {
-        m1 = min_data == 0 ? -1 : min_data + 0.5;
+        m1 = min_data == 0 ? -1 : min_data + 0.005;
         m2 = max_data == 0 ? -1 : max_data;
         let r = (m2 / m1) ** (1 / (num_colors));
 
@@ -835,7 +837,7 @@ class View_State
     }
     else if (min_data >= 0 && max_data >= 0) 
     {
-        m1 = min_data == 0 ? 1 : min_data + 0.5;
+        m1 = min_data == 0 ? 1 : min_data + 0.005;
         m2 = max_data == 0 ? 1 : max_data;
         let r = (m2 / m1) ** (1 / (num_colors));
 
@@ -847,7 +849,7 @@ class View_State
         m1 = min_data;
         m2 = max_data;
 
-        domain.push(min_data + 0.5);
+        domain.push(min_data + 0.005);
         let r = max_data ** (1 / (num_colors - 1));
 
         for (let x = 1; x <= max_data; x *= r)
@@ -941,8 +943,16 @@ class View_State
                 }
                 let s = parseInt(code);
                 let county = d.properties.name;
-                let value = county_data[code][county];
-                return `fill:${color(value)}; `;
+                try
+                {
+                  let value = county_data[code][county];
+                  return `fill:${color(value)}; `;
+                }
+                catch
+                {
+                  return `fill:black;`
+                }
+                  
             })
             .on("click", mapClicked)
             .on("mouseover", hovered)
@@ -967,7 +977,8 @@ class View_State
           );
           showLegend(color, m1, m2)
 
-          function mapClicked(d) {
+          function mapClicked(d) 
+          {
             centered = centered !== d && d;
       
             var paths = svg.selectAll("path")
@@ -1038,7 +1049,7 @@ class View_State
               // let id = toolbar.get("values").selected
               // let text = toolbar.get(`values:${id}`).text
               let text = instance.alias(Comma_Sep(instance.state.request.measures,instance.state.id))
-              console.log(text)
+
               g.append("text")
                   .attr("id", "caption")
                   .attr("x", 0) 
@@ -1073,7 +1084,8 @@ class View_State
                       .attr("class", "ldegree")
                       .attr("fill", "#000")
                       .attr("style", "font-size: 60%")
-                      .text(Math.round(10*val[0])/10);
+                      .text(Math.round(val[0]));
+                      //.text(Math.round(10*val[0])/10);
               }
           
               for (let i = 0; i <= n_divs; ++i)
@@ -1103,7 +1115,18 @@ class View_State
                 return
       
             let county = d.properties.name
-            let value = county_data[code][county]
+            let value = 0;
+            try
+            {
+              value = county_data[code][county]
+            }
+            catch
+            {
+              return;
+            }     
+            if (value == null || value == undefined)
+              return;
+
             let idx = color.range().indexOf(color(value))
             let rect_id = `#rect_${idx}`
             let lx = parseInt(d3.select(rect_id).attr("x"))
@@ -1127,10 +1150,6 @@ class View_State
             tooltipDiv.html(`${county} ${state} <br> ${value}`)
                 .style("left", (d3.event.layerX + 20) + "px")
                 .style("top", (d3.event.layerY + 20) + "px");
-
-            console.log(d3.event)
-
-            console.log(tooltipDiv._groups[0][0].style.left, " ", tooltipDiv._groups[0][0].style.top)
           }
           
           function moved(d)
@@ -1151,7 +1170,8 @@ class View_State
           }
     });
     
-    function mapReset(){
+    function mapReset()
+    {
       console.log("reset")
     }
   }

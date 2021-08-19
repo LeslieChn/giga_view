@@ -103,7 +103,7 @@ let dropdowns2 = {
   },
   val_filter_option:{
     name:'Value Filters',
-    contents: ['county:Median_Income_2019>10000', 'county:Median_Income_2019>10000', 'county:Median_Income_2019>50000', 'county:Median_Income_2019>75000'],
+    contents: ['', 'county:Median_Income_2019>40000', 'county:Median_Income_2019>20000,county:Median_Income_2019<=30000', 'county:pop_2019>500000', 'county:pop_2019<50000', 'county:pop_2019<pop_2015', 'property:elevation>600'],
     position:'top-left',
     // knob_position:'right'
   }
@@ -170,7 +170,6 @@ function viewsDropdownCallBack ()
   let index = $(this).prop('selectedIndex');
   let knob_id =  $(this).attr('data-knob')
   $("#"+ knob_id).val(index)
-  console.log(getKnob(knob_id))
   getKnob(knob_id).changed(0)
 }
 
@@ -184,7 +183,6 @@ function viewKnobChangeCallback ()
   selected_vs.createTile()
   $(".p1").on("change", controlsKnobChangeCallback)
   $(".controls-select").on("change", controlsDropdownCallBack)
-  console.log('views knob callback')
 }
 
 function controlsDropdownCallBack ()
@@ -192,7 +190,6 @@ function controlsDropdownCallBack ()
   let index = $(this).prop('selectedIndex');
   let knob_id =  $(this).attr('data-knob')
   $("#"+ knob_id).val(index)
-  console.log(getKnob(knob_id))
   getKnob(knob_id).changed(0)
 }
 
@@ -202,7 +199,6 @@ function controlsKnobChangeCallback ()
   let dd_id = '#' + $(this).attr('data-dropdown')
   let index = $(this).val();
   $(dd_id).prop('selectedIndex', index);
-  console.log('controls knob callback')
   selected_vs.createContent()
 }
 
