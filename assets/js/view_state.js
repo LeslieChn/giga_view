@@ -1062,7 +1062,7 @@ class View_State
                   .attr("fill", "#000")
                   .attr("text-anchor", "start")
                   .attr("font-weight", "bold")
-                  .attr("style", "font-size:  1em")
+                  .attr("style", "font-size:  1.20vw")
                   .text(text);
           
               let text_pixels = document.getElementById("caption").getComputedTextLength()
