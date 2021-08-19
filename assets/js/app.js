@@ -54,7 +54,7 @@ let req5 =
   base_dim: 'property',
   groupbys: ['county'],
   measures: ['?val_option'],
-  filters: []
+  val_filters: ['?val_filter_option'] 
 }
 
 let chart_def = [
@@ -76,14 +76,14 @@ let dropdowns = {
   gby_option:{
     name:'Groupby',
     contents:['prop_type','state_code', 'postal_code', 'city', 'county'],
-    position:'left',
-    knob_position:'left'
+    position:'bottom-left',
+    // knob_position:'left'
   },
   val_option:{
     name:'Value',
     contents: ['beds:count','size:avg', 'price:avg', 'elevation:avg', 'year_built:min'],
-    position:'right',
-    knob_position:'right'
+    position:'bottom-right',
+    // knob_position:'left'
   }
 }
 
@@ -92,14 +92,20 @@ let dropdowns2 = {
   col_option:{
     name:'Color',
     contents:['red', 'blue','green','grey'],
-    position:'left',
-    knob_position:'left'
+    position:'bottom-left',
+    // knob_position:'left'
   },
   val_option:{
     name:'Value',
     contents: ['beds:count','size:avg', 'price:avg', 'elevation:avg', 'year_built:min'],
-    position:'right',
-    knob_position:'right'
+    position:'bottom-right',
+    // knob_position:'right'
+  },
+  val_filter_option:{
+    name:'Value Filters',
+    contents: ['county:Median_Income_2019>10000', 'county:Median_Income_2019>10000', 'county:Median_Income_2019>50000', 'county:Median_Income_2019>75000'],
+    position:'top-left',
+    // knob_position:'right'
   }
 }
 
@@ -109,7 +115,7 @@ let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: cha
 {id:'countymap1', view_type:'countymap', request: req5, dropdowns:dropdowns2, color_scheme:"?col_option", aliases:aliases,  tile_config: {header: `CountyMap`, subheader: `This is a CountyMap`, height:'60vh', width:12}}]
 
 
-const ps = new PerfectScrollbar('#main-container')
+// const ps = new PerfectScrollbar('#main-container')
 
 var input=document.getElementById(`view-knob`)
 
