@@ -942,23 +942,16 @@ class View_State
             .attr("d", path)
             .attr("style", function (d)
             {
+                let county = d.properties.name;
                 let code = d.id.substring(0, 2);
-                if (!state_codes.has(code))
+                if (!state_codes.has(code) || !(county in county_data[code]))
                 {
-                    return "fill: #000";
+                  console.log("no code")
+                    return "fill: #000;"
                 }
                 let s = parseInt(code);
-                let county = d.properties.name;
-                try
-                {
-                  let value = county_data[code][county];
-                  return `fill:${color(value)}; `;
-                }
-                catch
-                {
-                  return `fill:black;`
-                }
-                  
+                let value = county_data[code][county];
+                return `fill:${color(value)}; `;                  
             })
             .on("click", mapClicked)
             .on("mouseover", hovered)
