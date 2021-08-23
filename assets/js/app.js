@@ -143,15 +143,25 @@ function createVsKnob(labels)
 {
   if(vs_knob != null)
     vs_knob.removeEventListeners()
+
   vs_knob = null
   let client_width = document.documentElement.clientWidth
+  let client_height = document.documentElement.scrollHeight
+  let size = Math.min(client_width, client_height)
   let knob_height = 100
   let knob_width = 100
-  if (client_width < 1024)
+
+  if (size >= 576 && size < 700)
   {
-    knob_height = 75
-    knob_width = 75
+    knob_height=75
+    knob_width=75
   }
+  else if (size < 576)
+  {
+    knob_height = 50
+    knob_width = 50
+  }
+
   $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
   let input=document.getElementById(`view-knob`)
   input.value = 0
