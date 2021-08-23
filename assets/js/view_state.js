@@ -51,6 +51,10 @@ const ps_object = {}
 var knob_objects = {}
 var vs_knob = null
 var selected_vs=null
+const html_sub = {
+  '<': "&lt",
+  '>': "&gt",
+};
 /*******************************************************************************/
 
 function Comma_Sep(a,vs_id) {
@@ -212,17 +216,12 @@ class View_State
 
   alias(name)
   {
-    const mapObj = {
-      '<': "&lt",
-      '>': "&gt",
-    };
-    name=name.replace(/\b(?:<|>)\b/gi, matched => mapObj[matched]);
-    if (!('aliases' in this.state) || !(name in this.state.aliases))
-      return name
-    else
+    let aliased_name = name
+    if (('aliases' in this.state) && (name in this.state.aliases))
     {
-      return this.state.aliases[name]
+      aliased_name=this.state.aliases[name]
     }
+    return aliased_name.replace(/(<|>)/g, matched => html_sub[matched]);
   }
 
   itemSubstitute(a_in, vs_id) 
@@ -319,9 +318,16 @@ class View_State
     {
       let controls=$(`#${this.getId()}-controls`)
       let position='position' in def? def.position:'bottom-right'
-      let dropdown_html=`<div id=${id}-${this.getId()}-column class="${position=='top-left'?'col-sm-6 col-8 mt-2':'col-sm-3 col-4 mt-3'} px-sm-3 px-1 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column"><h6 class="mb-1 text-white">${def.name}</h6><select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" data-tile-id="${this.getId()}" data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
-      ${this.createDropdownList(def.contents)}
-      </select></div>`
+      let dropdown_html=`<div id=${id}-${this.getId()}-column 
+        class="${position=='top-left'?'col-sm-6 col-8 mt-sm-2 mb-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
+        px-sm-3 px-1 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column">
+        <h6 class="mb-1 text-white">${def.name}</h6>
+        <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
+        data-tile-id="${this.getId()}" 
+        data-knob='${id}-${this.getId()}-knob' aria-label=".form-select-sm example">
+        ${this.createDropdownList(def.contents)}
+        </select></div>`
+
       if(position=='bottom-left')
         controls.prepend(dropdown_html)
       else if(position=='top-left')
@@ -349,14 +355,21 @@ class View_State
     {
       let controls=$(`#${this.getId()}-controls`)
       let knob_position='knob_position' in def? def.knob_position:def.position
-      let client_width=document.documentElement.clientWidth
-      let knob_height=100
-      let knob_width=100
-      if (client_width<1024)
-      {
-        knob_height=75
-        knob_width=75
-      }
+      let client_width = document.documentElement.clientWidth
+      let client_height = document.documentElement.scrollHeight
+      let size = Math.min(client_width, client_height)
+      let knob_height = 100
+      let knob_width = 100
+      if (size >= 576 && size < 700)
+        {
+          knob_height=75
+          knob_width=75
+        }
+      else if (size < 576)
+        {
+          knob_height = 50
+          knob_width = 50
+        }
       let knob_html=`<div class="${knob_position=='top-left'?'col-4 mb-2':'col-2 mt-2'} d-flex justify-content-center px-0 knob-column"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
       if(knob_position=='bottom-left')
         controls.prepend(knob_html)
@@ -386,7 +399,7 @@ class View_State
     $(cfg.parent_div).empty()
     $(cfg.parent_div).html(`<div id="${this.getId()}-box" class="col-lg-${cfg.width} mx-auto">
       <div id="${this.getId()}-card" class="card z-index-2" data-maximized="false">
-        <div class="card-body p-3">
+        <div class="card-body p-1">
           <div id="${this.getId()}" class="content" style="width:100%; height:${cfg.height};">
           </div>
         </div>
@@ -1030,14 +1043,14 @@ class View_State
           
               var client_width = document.getElementById(legendDiv).clientWidth
               let legend_width = client_width / 3
-              let left_margin = client_width  /2  -20
-              let rect_width = legend_width / n_divs
+              let rect_width = Math.max(legend_width / 5 , 10)
+              let left_margin = client_width / 2 - rect_width
 
               let rect_idx = 0;
               let rect_id = 0;
               var client_height = document.getElementById(legendDiv).clientHeight
               let legend_height = client_height * 0.8 
-              let top_margin = client_height *0.1
+              let top_margin = client_height * 0.15
               let rect_height = legend_height / n_divs
               
               var svg
@@ -1059,7 +1072,7 @@ class View_State
                   .attr("height", rect_height)
                   .attr("x", left_margin)
                   .attr("y", d => rectPos(d))
-                  .attr("width", 20)
+                  .attr("width", rect_width)
                   .attr("fill", function (d) { return color.range()[d] })
                   .attr("id", d => `rect_${rect_id++}`)
           
@@ -1071,7 +1084,7 @@ class View_State
               g.append("text")
                   .attr("id", "caption")
                   .attr("x", 0) 
-                  .attr("y", 16)
+                  .attr("y", top_margin / 2)
                   .attr("fill", "#000")
                   .attr("text-anchor", "start")
                   .attr("font-weight", "bold")
@@ -1098,7 +1111,7 @@ class View_State
               {
                   g.append("text")
                       .attr("y", rectPos(val[1] - 1) + 3)
-                      .attr("x", left_margin + 30)
+                      .attr("x", left_margin + rect_width * 1.5)
                       .attr("class", "ldegree")
                       .attr("fill", "#000")
                       .attr("style", "font-size: 60%")
@@ -1108,10 +1121,10 @@ class View_State
           
               for (let i = 0; i <= n_divs; ++i)
               {
-                  let width = 20, height = 1;
+                  let width = rect_width, height = 1;
                   if (i % 4 == 0)
                   {
-                      width = 22;
+                      width += 2;
                       height = 2;
                   }
                   g.append('line')
@@ -1198,9 +1211,9 @@ class View_State
     let mapDiv = container + "Map"
     $(`#${container}`).html(`
     <div class="row" style="height: 100%">
-      <div id="${legendDiv}" class="col-2 p-0" style="background-color: #ddd; border-style: solid;">
+      <div id="${legendDiv}" class="col-2 p-0" style="background-color: #ddd; border-radius: 1rem; box-shadow: 5px 5px 3px #a0a0a0;">
       </div>
-      <div id="${mapDiv}-column" class="col-10">
+      <div id="${mapDiv}-column" class="col-10 ps-1">
         <div id="${mapDiv}" style='position:relative;height:100%;'></div>
       </div>
     </div>`)
