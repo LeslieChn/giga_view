@@ -925,7 +925,7 @@ class View_State
         let county_filtered = county_features.filter((d) =>
             state_codes.has(d.id.substring(0, 2)));
 
-        projection.fitSize([width, height - 20], geoScope);
+        projection.fitExtent([[0,height*0.05],[width, height * 0.95]], geoScope);
 
         g.selectAll("path")
             .data(states_filtered)
@@ -992,7 +992,7 @@ class View_State
             var t0 = projection.translate(),
               s0 = projection.scale();
       
-            projection.fitSize([width - 20, height - 20], centered || geoScope);
+            projection.fitExtent([[0,height*0.05],[width, height * 0.95]], centered || geoScope);
       
             var interpolateTranslate = d3.interpolate(t0, projection.translate()),
             interpolateScale = d3.interpolate(s0, projection.scale());
@@ -1018,7 +1018,7 @@ class View_State
             var t0 = projection.translate(),
               s0 = projection.scale();
       
-            projection.fitSize([width - 20, height - 20], geoScope);
+            projection.fitExtent([[0,height*0.05],[width, height * 0.95]], geoScope);
       
             var interpolateTranslate = d3.interpolate(t0, projection.translate()),
             interpolateScale = d3.interpolate(s0, projection.scale());
