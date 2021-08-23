@@ -896,7 +896,8 @@ class View_State
       svg
           .append("rect")
           .attr("class", "background")
-          .on("click", mapReset);
+          .attr("width", width)
+          .attr("height", height)
       
       g = svg.append("g");
     }
@@ -969,7 +970,10 @@ class View_State
               .datum(topojson.mesh(us, us.objects.counties, (d) =>
               state_codes.has(d.id.substring(0, 2))))
               .attr("d", path)
-              
+          
+          d3.select(".background")
+            .on("click",mapReset);
+
           showLegend(color, m1, m2)
 
           function mapClicked(d) 
@@ -983,6 +987,32 @@ class View_State
               s0 = projection.scale();
       
             projection.fitSize([width - 20, height - 20], centered || geoScope);
+      
+            var interpolateTranslate = d3.interpolate(t0, projection.translate()),
+            interpolateScale = d3.interpolate(s0, projection.scale());
+      
+            var interpolator = function(t) {
+              projection.scale(interpolateScale(t))
+                .translate(interpolateTranslate(t));
+              paths.attr("d", path);
+            }; 
+        
+            d3.transition()
+              .duration(750)
+              .tween("projection", function() {
+               return interpolator;
+            });
+          }
+
+          function mapReset() 
+          {
+            var paths = svg.selectAll("path")
+              .classed("active", d => d === centered);
+      
+            var t0 = projection.translate(),
+              s0 = projection.scale();
+      
+            projection.fitSize([width - 20, height - 20], geoScope);
       
             var interpolateTranslate = d3.interpolate(t0, projection.translate()),
             interpolateScale = d3.interpolate(s0, projection.scale());
@@ -1165,10 +1195,8 @@ class View_State
           }
     });
     
-    function mapReset()
-    {
-      console.log("reset")
-    }
+    function mapReset(){}
+
   }
   async countymap(){
     
