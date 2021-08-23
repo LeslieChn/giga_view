@@ -1051,7 +1051,7 @@ class View_State
               var client_height = document.getElementById(legendDiv).clientHeight
               let legend_height = client_height * 0.8 
               let top_margin = client_height * 0.15
-              let rect_height = legend_height / n_divs
+              let rect_height = legend_height / (n_divs + 1)
               
               var svg
               svg =  d3.select(`#${legendDiv}`)
@@ -1075,6 +1075,21 @@ class View_State
                   .attr("width", rect_width)
                   .attr("fill", function (d) { return color.range()[d] })
                   .attr("id", d => `rect_${rect_id++}`)
+
+              g.append("rect")
+              .attr("stroke", "black")
+              .attr("height", rect_height / 2)
+              .attr("x", left_margin * 0.7)
+              .attr("y", rectPos(-2))
+              .attr("width", rect_width)
+              .attr("fill", `${null_color}`)
+              .attr("id", "no_data")
+
+              g.append("text")
+              .attr("x", left_margin * 0.7 + rect_width * 2)
+              .attr("y", rectPos(-2) + rect_height / 2 )
+              .text("- No Data");
+
           
               // let toolbar = w2ui.layout.get('top').toolbar
               // let id = toolbar.get("values").selected
@@ -1090,6 +1105,8 @@ class View_State
                   .attr("font-weight", "bold")
                   .attr("style", "font-size:  1.20vw")
                   .text(text);
+
+
           
               let text_pixels = document.getElementById("caption").getComputedTextLength()
               g.select("#caption")
