@@ -132,10 +132,12 @@ for (let view of view_def)
   labels.push('.')
 }
 
+selected_vs=view_states[0]
+
 createVsKnob(labels)
 
-selected_vs=view_states[0]
 selected_vs.state.tile_config.height = `${getContentHeight()}px`
+
 console.log('content height is :'+selected_vs.state.tile_config.height)
 selected_vs.createTile()
 
@@ -182,12 +184,13 @@ function createVsKnob(labels)
 
   $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
   let input=document.getElementById(`view-knob`)
-  input.value = 0
+  input.value = view_states.indexOf(selected_vs)
   input.dataset.labels = labels
   vs_knob = new Knob(input, new Ui.P1({}))
 }
 
 function refreshTiles(){
+  resizeContent()
   selected_vs.refresh()
   createVsKnob(this.labels)
   $(".p1").on("change", controlsKnobChangeCallback)
@@ -211,8 +214,8 @@ function viewKnobChangeCallback ()
   let index = $(this).val();
   $(dd_id).prop('selectedIndex', index);
   selected_vs=view_states[index]
+  selected_vs.state.tile_config.height = `${getContentHeight()}px`
   selected_vs.createTile()
-  resizeContent()
   $(".p1").on("change", controlsKnobChangeCallback)
   $(".controls-select").on("change", controlsDropdownCallBack)
 }
@@ -240,5 +243,5 @@ $(".controls-select").on("change", controlsDropdownCallBack)
 $("#view-select").on("change", viewsDropdownCallBack)
 
 $(document).ready();
-$(window).resize(()=>{resizeContent() ; refreshTiles()});
+$(window).resize(refreshTiles);
 

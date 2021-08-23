@@ -467,9 +467,6 @@ class View_State
   }
   async grid()
   {
-    let cfg=this.state.tile_config
-
-    $(`#${this.getId()}`).html(`<div id="${this.getId()}-grid" style="width:100%; height:${cfg.height};"></div>`)
 
     await this.serverRequest()
 
@@ -526,7 +523,7 @@ class View_State
       }
       catch(e)
       {}
-      this.object_instance=$(`#${this.getId()}-grid`).w2grid( 
+      this.object_instance=$(`#${this.getId()}`).w2grid( 
         {
           name: this.getId(),
           columns: columns,
