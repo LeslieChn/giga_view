@@ -109,7 +109,7 @@ let dropdowns2 = {
   }
 }
 
-let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: chart_def, dropdowns:dropdowns, aliases:aliases,  tile_config: {header: `Treemap`, subheader: `This is a Treemap`, height:'65vh', width:12}},
+let view_def=[{id:'treemap1', view_type:'treemap', request: req4, chart_def: chart_def, dropdowns:dropdowns, aliases:aliases,  tile_config: {header: `Treemap`, subheader: `This is a Treemap`, height:'80vh', width:12}},
 {id:'line-chart1', view_type:'chart',  view_subtype:'barChart', request: req3, dropdowns:dropdowns, aliases:aliases, chart_def: chart_def, tile_config: {header: `Line Chart`, subheader: `this is a Line Chart`, height:'65vh', width:12}},
 {id:'grid1', view_type:'grid', request: req3, dropdowns:dropdowns, aliases:aliases, tile_config: {header: `Grid`,  subheader: `This is a Grid`, height:'65vh', width:12}},
 {id:'countymap1', view_type:'countymap', request: req5, dropdowns:dropdowns2, color_scheme:"?col_option", aliases:aliases,  tile_config: {header: `CountyMap`, subheader: `This is a CountyMap`, height:'65vh', width:12}}]
@@ -132,12 +132,30 @@ for (let view of view_def)
   labels.push('.')
 }
 
-
+createVsKnob(labels)
 
 selected_vs=view_states[0]
+selected_vs.state.tile_config.height = `${getContentHeight()}px`
+console.log('content height is :'+selected_vs.state.tile_config.height)
 selected_vs.createTile()
 
-createVsKnob(labels)
+// resizeContent()
+
+function getContentHeight()
+{
+  let client_height = document.documentElement.clientHeight
+  console.log('client height =' + client_height)
+  let row_height = $('#vs-knob-column').height()
+  console.log(row_height)
+  return client_height - 2.5 * row_height 
+}
+
+function resizeContent()
+{
+  let content_height = getContentHeight()
+  selected_vs.state.tile_config.height = `${content_height}px`
+  $('.content').height(content_height)
+}
 
 function createVsKnob(labels) 
 {
@@ -151,16 +169,16 @@ function createVsKnob(labels)
   let knob_height = 100
   let knob_width = 100
 
-  if (size >= 576 && size < 700)
-  {
-    knob_height=75
-    knob_width=75
-  }
-  else if (size < 576)
-  {
-    knob_height = 50
-    knob_width = 50
-  }
+  // if (size >= 576 && size < 700)
+  // {
+  //   knob_height=75
+  //   knob_width=75
+  // }
+  // else if (size < 576)
+  // {
+  //   knob_height = 50
+  //   knob_width = 50
+  // }
 
   $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
   let input=document.getElementById(`view-knob`)
@@ -194,6 +212,7 @@ function viewKnobChangeCallback ()
   $(dd_id).prop('selectedIndex', index);
   selected_vs=view_states[index]
   selected_vs.createTile()
+  resizeContent()
   $(".p1").on("change", controlsKnobChangeCallback)
   $(".controls-select").on("change", controlsDropdownCallBack)
 }
@@ -221,5 +240,5 @@ $(".controls-select").on("change", controlsDropdownCallBack)
 $("#view-select").on("change", viewsDropdownCallBack)
 
 $(document).ready();
-$(window).resize(refreshTiles);
+$(window).resize(()=>{resizeContent() ; refreshTiles()});
 

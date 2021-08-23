@@ -360,16 +360,16 @@ class View_State
       let size = Math.min(client_width, client_height)
       let knob_height = 100
       let knob_width = 100
-      if (size >= 576 && size < 700)
-        {
-          knob_height=75
-          knob_width=75
-        }
-      else if (size < 576)
-        {
-          knob_height = 50
-          knob_width = 50
-        }
+      // if (size >= 576 && size < 700)
+      //   {
+      //     knob_height=75
+      //     knob_width=75
+      //   }
+      // else if (size < 576)
+      //   {
+      //     knob_height = 50
+      //     knob_width = 50
+      //   }
       let knob_html=`<div class="${knob_position=='top-left'?'col-4 mb-2':'col-2 mt-2'} d-flex justify-content-center px-0 knob-column"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
       if(knob_position=='bottom-left')
         controls.prepend(knob_html)
@@ -712,8 +712,8 @@ class View_State
   {
     let treemap_div = `${this.getId()}-treemap`
     $(`#${this.getId()}`).html(`<div id="${treemap_div}" style="position:absolute;"></div>`)
-    let ht=$(`#${this.getId()}`).parent().height();
-    var parent_width = $(`#${this.getId()}`).parent().width();
+    let ht=$(`#${this.getId()}`).height();
+    var parent_width = $(`#${this.getId()}`).width();
     var width = Math.round(parent_width*0.67);
     var height = Math.round(ht);
     var margin = Math.round((parent_width - width)/2)
@@ -1088,10 +1088,9 @@ class View_State
               g.append("text")
               .attr("x", left_margin * 0.7 + rect_width * 2)
               .attr("y", rectPos(-2) + rect_height / 2 )
-              .text("- No Data");
-
+              .text("– No Data")
           
-              // let toolbar = w2ui.layout.get('top').toolbar
+              // let toolbar = w2ui.layout.get('top').toolbarv
               // let id = toolbar.get("values").selected
               // let text = toolbar.get(`values:${id}`).text
               let text = instance.alias(Comma_Sep(instance.state.request.measures,instance.state.id))
