@@ -966,20 +966,10 @@ class View_State
 
           g.append("path")
               .attr("class", "county-borders")
-              .attr(
-                  "d",
-                  path(
-                      topojson.mesh(us, us.objects.counties, function (a, b)
-                      {
-                          let aCode = a.id.substring(0, 2);
-                          let bCode = b.id.substring(0, 2);
-
-                          if (!state_codes.has(aCode) || !state_codes.has(bCode))
-                              return false;
-                          else return a !== b;
-                      })
-                  )
-          );
+              .datum(topojson.mesh(us, us.objects.counties, (d) =>
+              state_codes.has(d.id.substring(0, 2))))
+              .attr("d", path)
+              
           showLegend(color, m1, m2)
 
           function mapClicked(d) 
