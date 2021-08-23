@@ -401,10 +401,10 @@ class View_State
   }
   getColorScheme()
   {
-    var color_schemes = {"red": d3.interpolateYlOrRd,
-                        "blue": d3.interpolateBlues,
-                        "green": d3.interpolateYlGn,
-                        "grey": d3.interpolateGreys}
+    var color_schemes = {"red": [d3.interpolateYlOrRd, "black"],
+                        "blue": [d3.interpolateBlues, "black"],
+                        "green": [d3.interpolateYlGn, "black"],
+                        "grey": [d3.interpolateGreys, "wheat"]}
 
     let color_scheme = this.state.color_scheme
     let color = ""
@@ -820,7 +820,8 @@ class View_State
     let colors = [];
     let num_colors = 12;
     let geoScope = null;
-    let scheme = this.getColorScheme();
+    let scheme, null_color ;
+    [scheme , null_color ] = this.getColorScheme();
     var tooltipDiv;
     let name_from_state_code =
     { "09": "CT", "36": "NY", "34": "NJ", "25": "MA" }
@@ -944,10 +945,9 @@ class View_State
             {
                 let county = d.properties.name;
                 let code = d.id.substring(0, 2);
-                if (!state_codes.has(code) || !(county in county_data[code]))
+                if (!(code in county_data) || !(county in county_data[code]))
                 {
-                  console.log("no code")
-                    return "fill: #000;"
+                    return `fill: ${null_color};`
                 }
                 let s = parseInt(code);
                 let value = county_data[code][county];
