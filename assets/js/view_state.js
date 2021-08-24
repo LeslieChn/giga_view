@@ -367,7 +367,7 @@ class View_State
           knob_width=75
         }
       
-      let knob_html=`<div class="${knob_position=='top-left'?'col-4 mt-1':'col-2 mt-2'} 
+      let knob_html=`<div class="${knob_position=='top-left'?'col-4 mt-1':'col-2 mt-sm-2 mt-1'} 
         ${knob_position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
         d-flex justify-content-center px-0 knob-column">
         <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
