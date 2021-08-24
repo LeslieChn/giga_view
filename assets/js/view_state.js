@@ -320,7 +320,7 @@ class View_State
       let position='position' in def? def.position:'bottom-right'
       let dropdown_html=`<div id=${id}-${this.getId()}-column 
         class="${position=='top-left'?'col-sm-6 col-8 mt-sm-3 mt-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
-        px-sm-3 px-1 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column">
+        px-sm-3 text-center m${position=='bottom-right'?'s-sm-auto pe-1':'e-sm-auto ps-1'} dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
         data-tile-id="${this.getId()}" 
@@ -332,7 +332,7 @@ class View_State
         controls.prepend(dropdown_html)
       else if(position=='top-left')
       {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-between">`
+        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around g-0">`
         $('#top-controls-column').append(top_controls_html)
         let top_controls=$(`#${this.getId()}-top-controls`)
         $(top_controls).append(dropdown_html)
@@ -367,7 +367,8 @@ class View_State
           knob_width=75
         }
       
-      let knob_html=`<div class="${knob_position=='top-left'?'col-4 my-sm-2':'col-2 mt-2'} 
+      let knob_html=`<div class="${knob_position=='top-left'?'col-4 my-sm-2 mt-1':'col-2 mt-2'} 
+        ${knob_position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
         d-flex justify-content-center px-0 knob-column">
         <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
         data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" 
@@ -377,7 +378,7 @@ class View_State
         controls.prepend(knob_html)
       else if(knob_position=='top-left')
         {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-between">`
+        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around">`
         $('#top-controls-column').append(top_controls_html)
         let top_controls=$(`#${this.getId()}-top-controls`)
         top_controls.prepend(knob_html)
