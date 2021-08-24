@@ -166,7 +166,7 @@ function createVsKnob(labels)
 
   vs_knob = null
   let client_width = document.documentElement.clientWidth
-  let client_height = document.documentElement.scrollHeight
+  let client_height = document.documentElement.clientHeight
   let size = Math.min(client_width, client_height)
   let knob_height = 100
   let knob_width = 100
