@@ -87,6 +87,7 @@ function chartColorGradient(canvas, bg_color)
 
 async function serverRequest(params) {
   let p = new URLSearchParams(params).toString();
+  p = p.replaceAll('%2520', '%20')
 
   // const api_url = `gserver/${p}`;
 
@@ -165,20 +166,33 @@ class View_State
     let vs_id=this.getId()
     let params =  {
       qid: req.qid,
-      dim: req.base_dim,
-      gby: Comma_Sep(req.groupbys, vs_id),
-      val: Comma_Sep(req.measures, vs_id),
-      // dim_filters: encodeURIComponent(getDimFilterStr(global_dim_filters)),
+      dim: req.base_dim
     };
-    if('val_filters' in req)
-      params.val_filters=Comma_Sep(req.val_filters, vs_id) 
+
+    if ('groupbys' in req)
+      params.gby = Comma_Sep(req.groupbys, vs_id)
+     
+    if ('measures' in req)
+      params.val = Comma_Sep(req.measures, vs_id)
+
+    if ('dim_filters' in req)
+    params.dim_filters = encodeURI(Comma_Sep(req.dim_filters, vs_id))
+
+    
+    if ('val_filters' in req)
+      params.val_filters = encodeURI(Comma_Sep(req.val_filters, vs_id))
+
     return params
   }
   async serverRequest()
   {
     let params=this.createRequestParams();
     let server_result = await serverRequest(params);
-
+    if (params.qid == "MD_RETR")
+    {
+      this.server_js=server_result
+      return
+    }
     let server_meta=server_result["meta"];
 
     if (server_meta.status != "OK"){
@@ -289,6 +303,9 @@ class View_State
           dataset.backgroundColor = chart_def.type == 'line' ? chartColorGradient(canvas, bg_color) : bg_color
         });
         this_chart.update()
+        break
+      case 'geomap':
+        this.autoZoom()
         break
       case 'treemap':
         this.createContent()
@@ -453,23 +470,96 @@ class View_State
    {
     $(`#${this.getId()}`).append(`<h5 class="font-weight-bolder">Gigaroll Dashboard</h5><p class="text-lg">${this.state.text}</p>`)
    }
-   googlemap()
-  {
-    try
-    {
-    let map = new google.maps.Map(document.getElementById(this.getId()), {
-      fullscreenControl: false,
-      zoom: 8,
-      center: { lat: 50, lng: 50 },
-      gestureHandling: "cooperative",
-    });
-    }
-    catch(e)
-    {
-      console.log(e)
-    }
 
-  }
+   autoZoom()
+   {
+     function callback(instance)
+     {       
+       instance.object_instance.invalidateSize()
+       instance.object_instance.fitBounds(instance.bounds) 
+     }
+     $(this.getId()).ready( callback.bind(null, this));
+   }
+
+   async geomap()
+   {
+     await this.serverRequest()
+     
+     if (this.object_instance && this.object_instance.remove)
+     {
+       console.log("instance is:", this.object_instance)
+       this.object_instance.off()
+       this.object_instance.remove()
+       console.log("instance is removed:", this.object_instance)
+     }
+ 
+     let server_js=this.server_js
+     let coords = []
+     let lat, lng, markers, bounds, mapZoom;
+     let markerColor = "red"
+     var boostType = "balloon"
+     let max_lat = -999, max_lng = -999
+     let min_lat =  999, min_lng =  999
+     
+     for (const data of server_js.data)
+     {
+       lat = parseInt(data[12]) /1e6 
+       lng = parseInt(data[13]) /1e6
+       max_lat = (lat>max_lat)? lat : max_lat
+       max_lng = (lng>max_lng)? lng : max_lng
+       min_lat = (lat<min_lat)? lat : min_lat
+       min_lng = (lng<min_lng)? lng : min_lng
+       coords.push([lat,lng])
+     }
+     var center_lat = (max_lat + min_lat)/2
+     var center_lng = (max_lng + min_lng)/2
+ 
+     var map_center = [center_lat, center_lng]
+     let minPoint = L.latLng(min_lat,min_lng)
+     let maxPoint = L.latLng(max_lat,max_lng)
+     this.bounds = L.latLngBounds(minPoint,maxPoint)
+ 
+     try
+     {
+       var osMap = L.map(this.getId(), 
+       {preferCanvas: true,
+        minZoom: 1,
+        maxZoom: 16,
+       })
+       let tileLayer = L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=vgYeUXLEg9nfjeVPRVwr', {
+       attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+       });
+       tileLayer.addTo(osMap);
+       this.object_instance = osMap
+     }
+     catch(e)
+     {
+       console.log(e)
+     }
+     setMarkers()
+     this.autoZoom()
+ 
+     function setMarkers() {
+       if (markers)
+         osMap.removeLayer(markers)
+       markers = L.featureGroup()
+       for (let coord of coords) {
+         L.circleMarker(coord, {
+             fillColor: markerColor,
+             fillOpacity: 1,
+             stroke: true,
+             color: 'white',
+             weight: 1,
+             boostType: boostType,
+             boostScale: 1,
+             boostExp: 0,
+             radius: 6
+         }).addTo(markers);
+       }
+       markers.addTo(osMap);
+     }
+ 
+   }
   async grid()
   {
 
