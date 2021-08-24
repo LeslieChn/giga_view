@@ -187,6 +187,7 @@ function createVsKnob(labels)
 function refreshTiles(){
   createVsKnob(this.labels)
   resizeContent()
+  console.log('resizing knobs')
   selected_vs.refresh()
   $(".p1").on("change", controlsKnobChangeCallback)
   $(".p2").on("change", viewKnobChangeCallback)

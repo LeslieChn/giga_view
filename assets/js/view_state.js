@@ -377,17 +377,19 @@ class View_State
       if(knob_position=='bottom-left')
         controls.prepend(knob_html)
       else if(knob_position=='top-left')
-        {
+      {
         let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around">`
         $('#top-controls-column').append(top_controls_html)
         let top_controls=$(`#${this.getId()}-top-controls`)
         top_controls.prepend(knob_html)
-        }
+      }
       else
         controls.append(knob_html)
+     
       let input=document.getElementById(`${id}-${this.getId()}-knob`)
       input.dataset.labels=(def.contents).map(()=>'.')
-      input.value=0
+      input.value =  $(`#${id}-${this.getId()}`).prop('selectedIndex');
+      console.log('input value:'+ input.value)
       knob_objects[`${id}-${this.getId()}-knob`]=new Knob(input, new Ui.P1({}))
     }
   }
