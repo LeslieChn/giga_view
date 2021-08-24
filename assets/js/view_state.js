@@ -319,7 +319,7 @@ class View_State
       let controls=$(`#${this.getId()}-controls`)
       let position='position' in def? def.position:'bottom-right'
       let dropdown_html=`<div id=${id}-${this.getId()}-column 
-        class="${position=='top-left'?'col-sm-6 col-8 mt-sm-2 mb-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
+        class="${position=='top-left'?'col-sm-6 col-8 mt-sm-3 mt-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
         px-sm-3 px-1 text-center m${position=='bottom-right'?'s':'e'}-auto dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
@@ -360,17 +360,19 @@ class View_State
       let size = Math.min(client_width, client_height)
       let knob_height = 100
       let knob_width = 100
-      // if (size >= 576 && size < 700)
-      //   {
-      //     knob_height=75
-      //     knob_width=75
-      //   }
-      // else if (size < 576)
-      //   {
-      //     knob_height = 50
-      //     knob_width = 50
-      //   }
-      let knob_html=`<div class="${knob_position=='top-left'?'col-4 mb-2':'col-2 mt-2'} d-flex justify-content-center px-0 knob-column"><input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`
+
+      if (size < 700)
+        {
+          knob_height=75
+          knob_width=75
+        }
+      
+      let knob_html=`<div class="${knob_position=='top-left'?'col-4 my-sm-2':'col-2 mt-2'} 
+        d-flex justify-content-center px-0 knob-column">
+        <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
+        data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" 
+        data-angleOffset="220" data-angleRange="280"></div>`
+
       if(knob_position=='bottom-left')
         controls.prepend(knob_html)
       else if(knob_position=='top-left')

@@ -141,7 +141,7 @@ selected_vs.state.tile_config.height = `${getContentHeight()}px`
 console.log('content height is :'+selected_vs.state.tile_config.height)
 selected_vs.createTile()
 
-// resizeContent()
+resizeContent()
 
 function getContentHeight()
 {
@@ -171,16 +171,11 @@ function createVsKnob(labels)
   let knob_height = 100
   let knob_width = 100
 
-  // if (size >= 576 && size < 700)
-  // {
-  //   knob_height=75
-  //   knob_width=75
-  // }
-  // else if (size < 576)
-  // {
-  //   knob_height = 50
-  //   knob_width = 50
-  // }
+  if (size < 700)
+  {
+    knob_height=75
+    knob_width=75
+  }
 
   $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
   let input=document.getElementById(`view-knob`)
@@ -190,9 +185,9 @@ function createVsKnob(labels)
 }
 
 function refreshTiles(){
+  createVsKnob(this.labels)
   resizeContent()
   selected_vs.refresh()
-  createVsKnob(this.labels)
   $(".p1").on("change", controlsKnobChangeCallback)
   $(".p2").on("change", viewKnobChangeCallback)
   $(".controls-select").on("change", controlsDropdownCallBack)
