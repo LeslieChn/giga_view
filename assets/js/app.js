@@ -127,7 +127,7 @@ let geodropdowns = {
   },
   dim_filter_option:{
     name:'City',
-    contents: ['', 'city:Ithaca-NY', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:New York-NY'],
+    contents: ['city:Ithaca-NY', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:New York-NY', ''],
     position:'bottom-right',
     // knob_position:'right'
   }
