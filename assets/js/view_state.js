@@ -537,9 +537,7 @@ class View_State
       let minPoint = L.latLng(min_lat,min_lng)
       let maxPoint = L.latLng(max_lat,max_lng)
       this.bounds = L.latLngBounds(minPoint,maxPoint)
-     }
-
-     
+     }     
  
      try
      {
@@ -560,7 +558,10 @@ class View_State
      }
      setMarkers()
      this.autoZoom()
- 
+     var bounds = this.bounds
+     L.easyButton( 'fa-undo', function(){
+      osMap.fitBounds(bounds);
+      }).addTo(osMap);
      function setMarkers() {
        if (markers)
          osMap.removeLayer(markers)
