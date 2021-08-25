@@ -488,9 +488,10 @@ class View_State
    autoZoom()
    {
      function callback(instance)
-     {       
-       instance.object_instance.invalidateSize()
-       instance.object_instance.fitBounds(instance.bounds) 
+     { 
+      console.log("new bounds is:",instance.bounds)
+      instance.object_instance.invalidateSize()
+      instance.object_instance.fitBounds(instance.bounds)
      }
      $(this.getId()).ready( callback.bind(null, this));
    }
@@ -501,15 +502,13 @@ class View_State
      
      if (this.object_instance && this.object_instance.remove)
      {
-       console.log("instance is:", this.object_instance)
        this.object_instance.off()
        this.object_instance.remove()
-       console.log("instance is removed:", this.object_instance)
      }
  
      let server_js=this.server_js
      let coords = []
-     let lat, lng, markers, bounds, mapZoom;
+     let lat, lng, markers;
      let markerColor = "red"
      var boostType = "balloon"
      let max_lat = -999, max_lng = -999
@@ -527,11 +526,20 @@ class View_State
      }
      var center_lat = (max_lat + min_lat)/2
      var center_lng = (max_lng + min_lng)/2
- 
-     var map_center = [center_lat, center_lng]
-     let minPoint = L.latLng(min_lat,min_lng)
-     let maxPoint = L.latLng(max_lat,max_lng)
-     this.bounds = L.latLngBounds(minPoint,maxPoint)
+     this.numcoords = coords.length
+     if (!this.bounds)
+     {
+      this.bounds = L.bounds(L.point(44.99034, -71.809849), L.point(38.930933, 79.759346))
+     }
+     
+     if (this.numcoords != 0)
+     {
+      let minPoint = L.latLng(min_lat,min_lng)
+      let maxPoint = L.latLng(max_lat,max_lng)
+      this.bounds = L.latLngBounds(minPoint,maxPoint)
+     }
+
+     
  
      try
      {
