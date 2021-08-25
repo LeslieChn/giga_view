@@ -79,8 +79,8 @@ function Comma_Sep(a,vs_id)
 
 function chartColorGradient(canvas, bg_color)
 {
-  let ctx2 = canvas.getContext("2d");
-  let gradientStroke = ctx2.createLinearGradient(0, canvas.scrollHeight, 0, 50);
+  let ctx = canvas.getContext("2d");
+  let gradientStroke = ctx.createLinearGradient(0, canvas.scrollHeight, 0, 50);
   gradientStroke.addColorStop(1, hexToRGB(bg_color, 0.2));
   gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
   gradientStroke.addColorStop(0, hexToRGB(bg_color, 0));
@@ -706,7 +706,7 @@ class View_State
 
     let canvas = document.getElementById(`${vs_id}-canvas`);
 
-    let ctx2 = canvas.getContext("2d");
+    let ctx = canvas.getContext("2d");
 
     let labels=[]
 
@@ -738,7 +738,7 @@ class View_State
       ds.push(d)
     }
 
-    this.object_instance = new Chart(ctx2, {
+    this.object_instance = new Chart(ctx, {
       data: {
         labels: labels,
         datasets: ds,
@@ -780,6 +780,183 @@ class View_State
         },
       },
     });
+  }
+  async setupColors(min_data, max_data)
+  {
+    this.point_colors = null;
+
+    let colors = []
+    let num_colors = 20
+    for (let i = 0; i <= num_colors; ++i)
+      colors.push(d3.interpolateYlOrRd(i/num_colors));
+  
+    let domain = []
+    if (min_data <= 0 && max_data <= 0)
+    {
+      let m1 = (min_data == 0) ? -1 : min_data;
+      let m2 = (max_data == 0) ? -1 : max_data;
+      let r = (m2/m1)**(1/num_colors)
+  
+      for (let x = m1; x <= m2; x *= r)
+        domain.push(x)
+    }
+    else if (min_data >= 0 && max_data >= 0)
+    {
+      let m1 = (min_data == 0) ? 1 : min_data;
+      let m2 = (max_data == 0) ? 1 : max_data;
+      let r = (m2/m1)**(1/num_colors)
+  
+      for (let x = m1; x <= m2; x *= r)
+        domain.push(x)
+    }
+    else
+    {
+      domain.push(min_data)
+      let r = (max_data)**(1/(num_colors-1))
+  
+      for (let x = 1; x <= max_data; x *= r)
+        domain.push(x)
+    }
+  
+      this.point_colors = d3.scaleThreshold()
+        .domain(domain)
+       .range(colors);
+  }
+  async scatterChart()
+  {
+    await this.serverRequest()
+
+    if (this.object_instance)
+    {
+      this.object_instance.destroy()
+    }
+
+    if (selected_vs && this!==selected_vs)
+    {
+      return 
+    } 
+
+    let cfg=this.state.tile_config
+    
+    $(`#${this.getId()}`).html(`<canvas id="${this.getId()}-canvas" style="width:100%; height:${cfg.height};">
+    </canvas>`)
+
+    let req=this.state.request
+    let vs_id=this.getId()
+
+    let server_js=this.server_js
+
+    let canvas = document.getElementById(`${vs_id}-canvas`);
+
+    let ctx2 = canvas.getContext("2d");
+
+    let n_vals = 2
+    let meas1 = 'price'
+    let meas2 = 'size'
+
+    let i = server_js.headers.indexOf(meas1)
+    let j = server_js.headers.indexOf(meas2)
+
+    let max_val = -Infinity, min_val = Infinity
+    let points=[]
+    for (let row of server_js.data)
+    {
+      let x=row[i]
+      let y=row[j]
+      points.push({x:x,y:y})
+      if (n_vals >= 3)
+      {
+        let val = row[1][2]
+        max_val = Math.max(max_val, val)
+        min_val = Math.min(min_val, val)
+      }
+    }
+
+    if (n_vals >= 3)
+      this.setupColors(min_val, max_val)
+
+    const regression = d3.regressionLinear()
+    .x(d => d.x)
+    .y(d => d.y)
+
+    let reg = regression(points)
+    let r2 = Math.round(reg.rSquared*100)/100
+
+    const data = {
+      datasets: [{
+        label: 'Scatter Dataset',
+        data: points,
+        //backgroundColor: 'rgb(255, 99, 132)'
+        pointBackgroundColor: function(context) {
+          if (n_vals >= 3)
+          {
+              let val = server_js[context.dataIndex][1][2]
+              return this.point_colors(val)
+          }
+          else
+            return 'red';
+  
+        }
+      }],
+    };
+
+    const config ={
+      type:  'scatter',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'bottom'
+          }
+        },
+        plugins: {
+          // tooltip: {
+          //     callbacks: {
+          //         label: function(ctx) {
+          //             // console.log(ctx);
+          //             let label = server_js[ctx.dataIndex][0][0] //ctx.dataset.labels[ctx.dataIndex];
+          //             label += " (" + ctx.parsed.x + ", " + ctx.parsed.y + ")";
+          //             return label;
+          //         }
+          //     }
+          // },
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'xy',
+            },
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true
+              },
+              mode: 'xy',
+            }
+          },
+          annotation: {
+            annotations: {
+              line1: {
+                type: 'line',
+                xMin: reg[0][0],
+                yMin: reg[0][1],
+                xMax: reg[1][0],
+                yMax: reg[1][1],
+                borderColor: 'rgb(99, 99, 99)',
+                borderWidth: 1,
+              }
+            }
+          }
+        }
+      }
+    }
+
+    this.object_instance = new Chart(ctx2, config);
+
   }
   async getTreeMapData()
   {
