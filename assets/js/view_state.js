@@ -57,9 +57,11 @@ const html_sub = {
 };
 /*******************************************************************************/
 
-function Comma_Sep(a,vs_id) {
+function Comma_Sep(a,vs_id) 
+{
   var s = "";
-  for (let i = 0; i < a.length; i++) {
+  for (let i = 0; i < a.length; i++) 
+  {
     let item=a[i]
     if(item.startsWith('?')){
       let dd_id=item.slice(1)
@@ -85,9 +87,19 @@ function chartColorGradient(canvas, bg_color)
   return gradientStroke
 }
 
-async function serverRequest(params) {
-  let p = new URLSearchParams(params).toString();
-  p = p.replaceAll('%2520', '%20')
+function reqParamsToString(params)
+{
+  let s = ''
+  for (let [key,val] of Object.entries(params))
+  {
+    s += `${key}=${val}&`
+  }
+  return s
+}
+
+async function serverRequest(params) 
+{
+  p = reqParamsToString(params)
 
   // const api_url = `gserver/${p}`;
 
@@ -114,10 +126,12 @@ function hexToRGB(hex, alpha) {
       g = parseInt(hex.slice(3, 5), 16),
       b = parseInt(hex.slice(5, 7), 16);
 
-  if (alpha!==undefined) {
-      let rgba=`rgba(${r},${g},${b},${alpha})`
+  if (alpha!==undefined) 
+  {
       return `rgba(${r},${g},${b},${alpha})`;
-  } else {
+  } 
+  else 
+  {
       return `rgba(${r},${g},${b})`;
   }
 }
