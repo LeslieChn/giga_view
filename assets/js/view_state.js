@@ -540,16 +540,19 @@ class View_State
      }     
  
      try
-     {
-       var osMap = L.map(this.getId(), 
+     { 
+      var streets = L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}@2x.png?key=vgYeUXLEg9nfjeVPRVwr', {id: 'simple_map', tileSize: 512, zoomOffset: -1, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'}),
+      satellite   = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}@2x.jpg?key=vgYeUXLEg9nfjeVPRVwr', {id: 'satellite', tileSize: 512, zoomOffset: -1, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'});
+      var baseMaps = {
+        "Streets": streets,
+        "Satellite": satellite
+      };
+      var osMap = L.map(this.getId(), 
        {preferCanvas: true,
         minZoom: 1,
         maxZoom: 16,
-       })
-       let tileLayer = L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=vgYeUXLEg9nfjeVPRVwr', {
-       attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
+        layers: [streets]
        });
-       tileLayer.addTo(osMap);
        this.object_instance = osMap
      }
      catch(e)
@@ -559,6 +562,7 @@ class View_State
      setMarkers()
      this.autoZoom()
      var bounds = this.bounds
+     L.control.layers(baseMaps).addTo(osMap);
      L.easyButton( 'fa-undo', function(){
       osMap.fitBounds(bounds);
       }).addTo(osMap);
