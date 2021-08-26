@@ -57,11 +57,9 @@ const html_sub = {
 };
 /*******************************************************************************/
 
-function Comma_Sep(a,vs_id) 
-{
+function Comma_Sep(a,vs_id) {
   var s = "";
-  for (let i = 0; i < a.length; i++) 
-  {
+  for (let i = 0; i < a.length; i++) {
     let item=a[i]
     if(item.startsWith('?')){
       let dd_id=item.slice(1)
@@ -87,19 +85,9 @@ function chartColorGradient(canvas, bg_color)
   return gradientStroke
 }
 
-function reqParamsToString(params)
-{
-  let s = ''
-  for (let [key,val] of Object.entries(params))
-  {
-    s += `${key}=${val}&`
-  }
-  return s
-}
-
-async function serverRequest(params) 
-{
-  p = reqParamsToString(params)
+async function serverRequest(params) {
+  let p = new URLSearchParams(params).toString();
+  p = p.replaceAll('%2520', '%20')
 
   // const api_url = `gserver/${p}`;
 
@@ -126,12 +114,10 @@ function hexToRGB(hex, alpha) {
       g = parseInt(hex.slice(3, 5), 16),
       b = parseInt(hex.slice(5, 7), 16);
 
-  if (alpha!==undefined) 
-  {
+  if (alpha!==undefined) {
+      let rgba=`rgba(${r},${g},${b},${alpha})`
       return `rgba(${r},${g},${b},${alpha})`;
-  } 
-  else 
-  {
+  } else {
       return `rgba(${r},${g},${b})`;
   }
 }
@@ -488,10 +474,9 @@ class View_State
    autoZoom()
    {
      function callback(instance)
-     { 
-      console.log("new bounds is:",instance.bounds)
-      instance.object_instance.invalidateSize()
-      instance.object_instance.fitBounds(instance.bounds)
+     {       
+       instance.object_instance.invalidateSize()
+       instance.object_instance.fitBounds(instance.bounds) 
      }
      $(this.getId()).ready( callback.bind(null, this));
    }
@@ -499,16 +484,24 @@ class View_State
    async geomap()
    {
      await this.serverRequest()
-     
+
+         
+     if (selected_vs && this!==selected_vs)
+     {
+      return 
+     } 
+    
      if (this.object_instance && this.object_instance.remove)
      {
+       console.log("instance is:", this.object_instance)
        this.object_instance.off()
        this.object_instance.remove()
+       console.log("instance is removed:", this.object_instance)
      }
  
      let server_js=this.server_js
      let coords = []
-     let lat, lng, markers;
+     let lat, lng, markers, bounds, mapZoom;
      let markerColor = "red"
      var boostType = "balloon"
      let max_lat = -999, max_lng = -999
@@ -526,18 +519,11 @@ class View_State
      }
      var center_lat = (max_lat + min_lat)/2
      var center_lng = (max_lng + min_lng)/2
-     this.numcoords = coords.length
-     if (!this.bounds)
-     {
-      this.bounds = L.bounds(L.point(44.99034, -71.809849), L.point(38.930933, 79.759346))
-     }
-     
-     if (this.numcoords != 0)
-     {
-      let minPoint = L.latLng(min_lat,min_lng)
-      let maxPoint = L.latLng(max_lat,max_lng)
-      this.bounds = L.latLngBounds(minPoint,maxPoint)
-     }     
+ 
+     var map_center = [center_lat, center_lng]
+     let minPoint = L.latLng(min_lat,min_lng)
+     let maxPoint = L.latLng(max_lat,max_lng)
+     this.bounds = L.latLngBounds(minPoint,maxPoint)
  
      try
      {
@@ -558,10 +544,7 @@ class View_State
      }
      setMarkers()
      this.autoZoom()
-     var bounds = this.bounds
-     L.easyButton( 'fa-undo', function(){
-      osMap.fitBounds(bounds);
-      }).addTo(osMap);
+ 
      function setMarkers() {
        if (markers)
          osMap.removeLayer(markers)
@@ -851,22 +834,24 @@ class View_State
     let ctx2 = canvas.getContext("2d");
 
     let n_vals = 2
-    let meas1 = 'price'
-    let meas2 = 'size'
-
-    let i = server_js.headers.indexOf(meas1)
-    let j = server_js.headers.indexOf(meas2)
-
+    let meas1 = Comma_Sep([this.state.x_axis], vs_id)
+    let meas2 = Comma_Sep([this.state.y_axis], vs_id)
+    let meas3 = Comma_Sep([this.state.z_axis], vs_id)
+    if (meas3 != '')
+      n_vals = 3
+    let i1 = server_js.headers.indexOf(meas1)
+    let i2 = server_js.headers.indexOf(meas2)
+    let i3 = server_js.headers.indexOf(meas3)
     let max_val = -Infinity, min_val = Infinity
     let points=[]
     for (let row of server_js.data)
     {
-      let x=row[i]
-      let y=row[j]
+      let x=row[i1]
+      let y=row[i2]
       points.push({x:x,y:y})
       if (n_vals >= 3)
       {
-        let val = row[1][2]
+        let val = row[i3]
         max_val = Math.max(max_val, val)
         min_val = Math.min(min_val, val)
       }
@@ -887,16 +872,7 @@ class View_State
         label: 'Scatter Dataset',
         data: points,
         //backgroundColor: 'rgb(255, 99, 132)'
-        pointBackgroundColor: function(context) {
-          if (n_vals >= 3)
-          {
-              let val = server_js[context.dataIndex][1][2]
-              return this.point_colors(val)
-          }
-          else
-            return 'red';
-  
-        }
+        pointBackgroundColor: colorCallback.bind(null, this)
       }],
     };
 
@@ -909,7 +885,19 @@ class View_State
         scales: {
           x: {
             type: 'linear',
-            position: 'bottom'
+            position: 'bottom',
+            title: {
+              display:true,
+              text: meas1
+            }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: {
+              display:true,
+              text: meas2
+            }
           }
         },
         plugins: {
@@ -956,6 +944,18 @@ class View_State
     }
 
     this.object_instance = new Chart(ctx2, config);
+
+    function colorCallback(instance, context) 
+    {
+      if (n_vals >= 3)
+      {
+          let val = server_js.data[context.dataIndex][i3]
+          return instance.point_colors(val)
+      }
+      else
+        return 'red';
+
+    }
 
   }
   async getTreeMapData()
