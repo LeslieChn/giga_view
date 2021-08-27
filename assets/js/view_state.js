@@ -354,7 +354,7 @@ class View_State
       let position='position' in def? def.position:'bottom-right'
 
       let dropdown_html = `<div id=${id}-${this.getId()}-column 
-        class="${position=='top-left'?'col-6 mt-sm-3 mt-1':'col-3 mt-sm-3 mt-1'} 
+        class="${position=='top-left'?'col-md-6 col-sm-4 col-2 mt-sm-3 mt-1':'col-md-3 col-sm-2 col-1 mt-sm-3 mt-1'} 
         px-sm-3 text-center m${position=='bottom-right'?'s-sm-auto pe-1':'e-sm-auto ps-1'} dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
@@ -364,7 +364,7 @@ class View_State
         </select></div>`
 
       let knob_html=`<div class="${position=='top-left'?'col-2 mt-1':'col-1 mt-sm-2 mt-1'} 
-        ${position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
+        ${position=='bottom-right'?'me-sm-0':'ms-sm-0 '}
         d-flex justify-content-center px-0 knob-column">
         <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
         data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" 
