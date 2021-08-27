@@ -516,7 +516,7 @@ class View_State
      
      for (const data of server_js.data)
      {
-       lat = parseInt(data[12]) /1e6 
+       lat = parseInt(data[12]) /1e6
        lng = parseInt(data[13]) /1e6
        max_lat = (lat>max_lat)? lat : max_lat
        max_lng = (lng>max_lng)? lng : max_lng
@@ -541,8 +541,8 @@ class View_State
  
      try
      { 
-      var streets = L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}@2x.png?key=vgYeUXLEg9nfjeVPRVwr', {id: 'simple_map', tileSize: 512, zoomOffset: -1, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'}),
-      satellite   = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}@2x.jpg?key=vgYeUXLEg9nfjeVPRVwr', {id: 'satellite', tileSize: 512, zoomOffset: -1, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'});
+      var streets = L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}@2x.png?key=vgYeUXLEg9nfjeVPRVwr', {id: 'simple_map', tileSize: 1024, zoomOffset: -2, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'}),
+      satellite   = L.tileLayer('https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}@2x.jpg?key=vgYeUXLEg9nfjeVPRVwr', {id: 'satellite', tileSize: 1024, zoomOffset: -2, attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'});
       var baseMaps = {
         "Streets": streets,
         "Satellite": satellite
@@ -571,6 +571,8 @@ class View_State
          osMap.removeLayer(markers)
        markers = L.featureGroup()
        for (let coord of coords) {
+        let html = `${coord[0]},${coord[1]}`
+        // `<a target="_blank" href="https://www.google.com/maps/place/${coord[0]}N+${coord[1]}W">' ${coord[0]},${coord[1]} </a>`
          L.circleMarker(coord, {
              fillColor: markerColor,
              fillOpacity: 1,
@@ -581,7 +583,9 @@ class View_State
              boostScale: 1,
              boostExp: 0,
              radius: 6
-         }).addTo(markers);
+         })
+         .addTo(markers)
+         .bindPopup(`<a target="_blank" href="https://www.google.com/maps/search/${coord[0]}+${coord[1]}">${coord[0]},${coord[1]}</a>`);
        }
        markers.addTo(osMap);
      }
