@@ -7,7 +7,7 @@ body
 
 #main-container
 {
-    overflow: scroll!important;
+    overflow: hidden!important;
 }
 
 

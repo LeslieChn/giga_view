@@ -281,7 +281,7 @@ class View_State
   {
     let type=this.state.view_type
     let vs_id=this.getId()
-    this.createKnobs()
+    this.createControls()
     switch(type)
     {
       case 'grid':
@@ -325,18 +325,36 @@ class View_State
     }
     return list
   }
-  createDropdowns()
+  createControls()
   {
     $('.dropdown-column').remove()
+    $('.knob-column').remove()
     if ('dropdowns' in this.state == false)
       return ''
+    for (const [id, instance] of Object.entries(knob_objects))
+    {
+      instance.removeEventListeners()
+    }
+    knob_objects={}
     let dropdowns=this.state.dropdowns
     for (const [id, def] of Object.entries(dropdowns))
     {
-      let controls=$(`#${this.getId()}-controls`)
+      let top_controls=$(`#top-controls`)
+      let bottom_controls=$(`#bottom-controls`)
+      let client_width = document.documentElement.clientWidth
+      let client_height = document.documentElement.clientHeight
+      let size = Math.min(client_width, client_height)
+      let knob_height = 100
+      let knob_width = 100
+      if (size < 700)
+      {
+        knob_height=75
+        knob_width=75
+      }
       let position='position' in def? def.position:'bottom-right'
-      let dropdown_html=`<div id=${id}-${this.getId()}-column 
-        class="${position=='top-left'?'col-sm-6 col-8 mt-sm-3 mt-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
+
+      let dropdown_html = `<div id=${id}-${this.getId()}-column 
+        class="${position=='top-left'?'col-6 mt-sm-3 mt-1':'col-3 mt-sm-3 mt-1'} 
         px-sm-3 text-center m${position=='bottom-right'?'s-sm-auto pe-1':'e-sm-auto ps-1'} dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
@@ -345,64 +363,28 @@ class View_State
         ${this.createDropdownList(def.contents)}
         </select></div>`
 
-      if(position=='bottom-left')
-        controls.prepend(dropdown_html)
-      else if(position=='top-left')
-      {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around g-0">`
-        $('#top-controls-column').append(top_controls_html)
-        let top_controls=$(`#${this.getId()}-top-controls`)
-        $(top_controls).append(dropdown_html)
-      }
-      else
-        controls.append(dropdown_html)
-    }
-  }
-  createKnobs(){
-    $('.knob-column').remove()
-    if ('dropdowns' in this.state == false)
-      return ''
-    let dropdowns=this.state.dropdowns
-    for (const [id, instance] of Object.entries(knob_objects))
-    {
-      instance.removeEventListeners()
-    }
-    knob_objects={}
-    for (const [id, def] of Object.entries(dropdowns))
-    {
-      let controls=$(`#${this.getId()}-controls`)
-      let knob_position='knob_position' in def? def.knob_position:def.position
-      let client_width = document.documentElement.clientWidth
-      let client_height = document.documentElement.clientHeight
-      let size = Math.min(client_width, client_height)
-      let knob_height = 100
-      let knob_width = 100
-
-      if (size < 700)
-        {
-          knob_height=75
-          knob_width=75
-        }
-      
-      let knob_html=`<div class="${knob_position=='top-left'?'col-4 mt-1':'col-2 mt-sm-2 mt-1'} 
-        ${knob_position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
+      let knob_html=`<div class="${position=='top-left'?'col-2 mt-1':'col-1 mt-sm-2 mt-1'} 
+        ${position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
         d-flex justify-content-center px-0 knob-column">
         <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
         data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" 
         data-angleOffset="220" data-angleRange="280"></div>`
 
-      if(knob_position=='bottom-left')
-        controls.prepend(knob_html)
-      else if(knob_position=='top-left')
+      if(position=='bottom-left')
       {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around">`
-        $('#top-controls-column').append(top_controls_html)
-        let top_controls=$(`#${this.getId()}-top-controls`)
-        top_controls.prepend(knob_html)
+        let bl_controls=knob_html+dropdown_html
+        bottom_controls.prepend(bl_controls)
+      }
+      else if(position=='top-left')
+      {
+        let tl_controls=knob_html+dropdown_html
+        top_controls.prepend(tl_controls)
       }
       else
-        controls.append(knob_html)
-     
+      {
+        let br_controls=dropdown_html+knob_html
+        bottom_controls.append(br_controls)
+      }
       let input=document.getElementById(`${id}-${this.getId()}-knob`)
       input.dataset.labels=(def.contents).map(()=>'.')
       input.value =  $(`#${id}-${this.getId()}`).prop('selectedIndex');
@@ -426,12 +408,11 @@ class View_State
           </div>
         </div>
       </div>
-      <div id="${this.getId()}-controls" class="row justify-content-between"> 
+      <div id="bottom-controls" class="row justify-content-between"> 
         
       </div>
      </div>`);
-     this.createDropdowns()
-     this.createKnobs()
+     this.createControls()
      this.createContent()
   }
   getColorScheme()
