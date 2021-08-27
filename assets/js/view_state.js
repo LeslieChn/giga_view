@@ -354,7 +354,7 @@ class View_State
       let position='position' in def? def.position:'bottom-right'
 
       let dropdown_html = `<div id=${id}-${this.getId()}-column 
-        class="${position=='top-left'?'col-md-6 col-sm-4 col-2 mt-sm-3 mt-1':'col-md-3 col-sm-2 col-1 mt-sm-3 mt-1'} 
+        class="${position=='top-left'?' col-4 mt-sm-3 mt-1':'col-2 mt-sm-3 mt-1'} 
         px-sm-3 text-center m${position=='bottom-right'?'s-sm-auto pe-1':'e-sm-auto ps-1'} dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
@@ -850,7 +850,7 @@ class View_State
 
     const data = {
       datasets: [{
-        label: 'Scatter Dataset',
+        label: null,
         data: points,
         //backgroundColor: 'rgb(255, 99, 132)'
         pointBackgroundColor: colorCallback.bind(null, this)
@@ -882,16 +882,25 @@ class View_State
           }
         },
         plugins: {
-          // tooltip: {
-          //     callbacks: {
-          //         label: function(ctx) {
-          //             // console.log(ctx);
-          //             let label = server_js[ctx.dataIndex][0][0] //ctx.dataset.labels[ctx.dataIndex];
-          //             label += " (" + ctx.parsed.x + ", " + ctx.parsed.y + ")";
-          //             return label;
-          //         }
-          //     }
-          // },
+          tooltip: {
+              callbacks: {
+                  label: function(ctx) {
+                      // console.log(ctx);
+                      //let label = server_js.data[ctx.dataIndex][0][0] //ctx.dataset.labels[ctx.dataIndex];
+                      
+                      let label = `${meas1} = ${ctx.parsed.x}; ${meas2} = ${ctx.parsed.y}`
+                      if (n_vals >= 3 && (meas3 != meas1 && meas3 != meas2))
+                      {
+                        let val = server_js.data[ctx.dataIndex][i3]
+                        label += `; ${meas3} = ${val}`
+                      }
+                      return label;
+                  }
+              }
+          },
+          legend: {
+            display: false
+          },
           zoom: {
             pan: {
               enabled: true,

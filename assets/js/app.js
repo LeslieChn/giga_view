@@ -119,7 +119,7 @@ let dropdowns2 = {
     // knob_position:'right'
   },
   val_filter_option:{
-    name:'Value Filters',
+    name:'Filters',
     contents: ['', 'county:Median_Income_2019>40000', 'county:Median_Income_2019>20000,county:Median_Income_2019<=30000', 'county:pop_2019>500000', 'county:pop_2019<50000', 'county:pop_2019<pop_2015', 'property:elevation>600'],
     position:'top-left',
     // knob_position:'right'
@@ -128,14 +128,14 @@ let dropdowns2 = {
 
 let geodropdowns = {
   val_filter_option:{
-    name:'Value Filters',
+    name:'Filters',
     contents: ['', 'property:price>1000000', 'property:price<200000', 'property:size<1500', 'property:size>5000', 'property:year_built<=1970', 'property:year_built>=1985', 'property:elevation>600'],
     position:'bottom-left',
     // knob_position:'right'
   },
   dim_filter_option:{
     name:'City',
-    contents: ['city:Greenwich-CT', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:New York-NY', 'city:Newark-NJ'],
+    contents: ['city:New York-NY','city:Brooklyn-NY','city:Greenwich-CT', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:Newark-NJ'],
     position:'bottom-right',
     // knob_position:'right'
   }
@@ -150,7 +150,7 @@ let scatterdropdowns = {
   },
   y_axis_option:{
     name:'Y-Axis',
-    contents: ['size', 'price', 'beds', 'baths', 'year_built', 'elevation'],
+    contents: ['price', 'size', 'beds', 'baths', 'year_built', 'elevation'],
     position:'bottom-right',
     // knob_position:'right'
   },
@@ -162,7 +162,7 @@ let scatterdropdowns = {
   },
   dim_filter_option:{
     name:'City',
-    contents: ['city:Greenwich-CT', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:New York-NY', 'city:Newark-NJ'],
+    contents: ['city:New York-NY', 'city:Brooklyn-NY','city:Greenwich-CT', 'city:New Canaan-CT', 'city:Stamford-CT', 'city:Newark-NJ'],
     position:'top-left',
     // knob_position:'right'
   }
