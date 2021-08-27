@@ -225,7 +225,6 @@ function createVsKnob(labels)
 {
   if(vs_knob != null)
     vs_knob.removeEventListeners()
-
   vs_knob = null
   let client_width = document.documentElement.clientWidth
   let client_height = document.documentElement.clientHeight
@@ -239,7 +238,18 @@ function createVsKnob(labels)
     knob_width=75
   }
 
-  $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>`)
+  $('#vs-knob-column').html(`<input id='view-knob' class='p2' type="range" min="0" max="10" data-dropdown='view-select' 
+    data-width="${knob_width}" data-height="${knob_height}" data-angleOffset="220" data-angleRange="280"></div>
+    <div class="dropdown float-end p-2">
+    <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="fa fa-ellipsis-v fa-2x text-secondary" aria-hidden="true"></i>
+    </a>
+    <ul id="tile-functions" class="dropdown-menu px-2 py-3 me-sm-n5 me-n5" aria-labelledby="dropdownTable" style="">
+      <li><a class="dropdown-item border-radius-md" onclick="">Maximize</a></li>
+      <li><a class="dropdown-item border-radius-md" onclick="">Restore Tiles</a></li>
+      <li><a class="dropdown-item border-radius-md" href="javascript:;">Something else here</a></li>
+    </ul>
+    </div>`)
   let input=document.getElementById(`view-knob`)
   input.value = view_states.indexOf(selected_vs)
   input.dataset.labels = labels
