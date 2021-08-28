@@ -57,11 +57,9 @@ const html_sub = {
 };
 /*******************************************************************************/
 
-function Comma_Sep(a,vs_id) 
-{
+function Comma_Sep(a,vs_id) {
   var s = "";
-  for (let i = 0; i < a.length; i++) 
-  {
+  for (let i = 0; i < a.length; i++) {
     let item=a[i]
     if(item.startsWith('?')){
       let dd_id=item.slice(1)
@@ -89,28 +87,28 @@ function chartColorGradient(canvas, bg_color)
 
 function reqParamsToString(params)
 {
-  let s = ''
-  for (let [key,val] of Object.entries(params))
-  {
-    s += `${key}=${val}&`
-  }
-  return s
+    let s = ''
+    for (let [key,val] of Object.entries(params))
+    {
+      s += `${key}=${val}&`
+    }
+    return s
 }
-
+  
 async function serverRequest(params) 
 {
-  p = reqParamsToString(params)
+    p = reqParamsToString(params)
 
   // const api_url = `gserver/${p}`;
 
   // var request = new Request(api_url, { method: "POST" });
 
-  var request = new Request(`http://127.0.0.1:55555/req?${p}`, { method: "GET" });
+    var request = new Request(`http://127.0.0.1:55555/req?${p}`, { method: "GET" });
 
-  const response = await fetch(request);
-  const json = await response.json();
+    const response = await fetch(request);
+    const json = await response.json();
 
-  return json;
+    return json;
 }
 
 function getDataColumn (server_js, col_idx){
@@ -126,12 +124,10 @@ function hexToRGB(hex, alpha) {
       g = parseInt(hex.slice(3, 5), 16),
       b = parseInt(hex.slice(5, 7), 16);
 
-  if (alpha!==undefined) 
-  {
+  if (alpha!==undefined) {
+      let rgba=`rgba(${r},${g},${b},${alpha})`
       return `rgba(${r},${g},${b},${alpha})`;
-  } 
-  else 
-  {
+  } else {
       return `rgba(${r},${g},${b})`;
   }
 }
@@ -295,7 +291,7 @@ class View_State
   {
     let type=this.state.view_type
     let vs_id=this.getId()
-    this.createKnobs()
+    this.createControls()
     switch(type)
     {
       case 'grid':
@@ -339,18 +335,36 @@ class View_State
     }
     return list
   }
-  createDropdowns()
+  createControls()
   {
     $('.dropdown-column').remove()
+    $('.knob-column').remove()
     if ('dropdowns' in this.state == false)
       return ''
+    for (const [id, instance] of Object.entries(knob_objects))
+    {
+      instance.removeEventListeners()
+    }
+    knob_objects={}
     let dropdowns=this.state.dropdowns
     for (const [id, def] of Object.entries(dropdowns))
     {
-      let controls=$(`#${this.getId()}-controls`)
+      let top_controls=$(`#top-controls`)
+      let bottom_controls=$(`#bottom-controls`)
+      let client_width = document.documentElement.clientWidth
+      let client_height = document.documentElement.clientHeight
+      let size = Math.min(client_width, client_height)
+      let knob_height = 100
+      let knob_width = 100
+      if (size < 700)
+      {
+        knob_height=75
+        knob_width=75
+      }
       let position='position' in def? def.position:'bottom-right'
-      let dropdown_html=`<div id=${id}-${this.getId()}-column 
-        class="${position=='top-left'?'col-sm-6 col-8 mt-sm-3 mt-1':'col-sm-3 col-4 mt-sm-3 mt-1'} 
+
+      let dropdown_html = `<div id=${id}-${this.getId()}-column 
+        class="${position=='top-left'?' col-4 mt-sm-3 mt-1':'col-2 mt-sm-3 mt-1'} 
         px-sm-3 text-center m${position=='bottom-right'?'s-sm-auto pe-1':'e-sm-auto ps-1'} dropdown-column">
         <h6 class="mb-1 text-white">${def.name}</h6>
         <select id=${id}-${this.getId()} class="form-select form-select-sm controls-select pt-0" 
@@ -359,64 +373,28 @@ class View_State
         ${this.createDropdownList(def.contents)}
         </select></div>`
 
-      if(position=='bottom-left')
-        controls.prepend(dropdown_html)
-      else if(position=='top-left')
-      {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around g-0">`
-        $('#top-controls-column').append(top_controls_html)
-        let top_controls=$(`#${this.getId()}-top-controls`)
-        $(top_controls).append(dropdown_html)
-      }
-      else
-        controls.append(dropdown_html)
-    }
-  }
-  createKnobs(){
-    $('.knob-column').remove()
-    if ('dropdowns' in this.state == false)
-      return ''
-    let dropdowns=this.state.dropdowns
-    for (const [id, instance] of Object.entries(knob_objects))
-    {
-      instance.removeEventListeners()
-    }
-    knob_objects={}
-    for (const [id, def] of Object.entries(dropdowns))
-    {
-      let controls=$(`#${this.getId()}-controls`)
-      let knob_position='knob_position' in def? def.knob_position:def.position
-      let client_width = document.documentElement.clientWidth
-      let client_height = document.documentElement.clientHeight
-      let size = Math.min(client_width, client_height)
-      let knob_height = 100
-      let knob_width = 100
-
-      if (size < 700)
-        {
-          knob_height=75
-          knob_width=75
-        }
-      
-      let knob_html=`<div class="${knob_position=='top-left'?'col-4 mt-1':'col-2 mt-sm-2 mt-1'} 
-        ${knob_position=='bottom-right'?'me-sm-0 me-n3':'ms-sm-0 ms-n3'}
+      let knob_html=`<div class="${position=='top-left'?'col-2 mt-1':'col-1 mt-sm-2 mt-1'} 
+        ${position=='bottom-right'?'me-sm-0':'ms-sm-0 '}
         d-flex justify-content-center px-0 knob-column">
         <input id='${id}-${this.getId()}-knob' class='p1' type="range" min="0" max="10" 
         data-dropdown=${id}-${this.getId()} data-width="${knob_width}" data-height="${knob_height}" 
         data-angleOffset="220" data-angleRange="280"></div>`
 
-      if(knob_position=='bottom-left')
-        controls.prepend(knob_html)
-      else if(knob_position=='top-left')
+      if(position=='bottom-left')
       {
-        let top_controls_html= `<div id="${this.getId()}-top-controls" class="row justify-content-around">`
-        $('#top-controls-column').append(top_controls_html)
-        let top_controls=$(`#${this.getId()}-top-controls`)
-        top_controls.prepend(knob_html)
+        let bl_controls=knob_html+dropdown_html
+        bottom_controls.prepend(bl_controls)
+      }
+      else if(position=='top-left')
+      {
+        let tl_controls=knob_html+dropdown_html
+        top_controls.prepend(tl_controls)
       }
       else
-        controls.append(knob_html)
-     
+      {
+        let br_controls=dropdown_html+knob_html
+        bottom_controls.append(br_controls)
+      }
       let input=document.getElementById(`${id}-${this.getId()}-knob`)
       input.dataset.labels=(def.contents).map(()=>'.')
       input.value =  $(`#${id}-${this.getId()}`).prop('selectedIndex');
@@ -440,12 +418,11 @@ class View_State
           </div>
         </div>
       </div>
-      <div id="${this.getId()}-controls" class="row justify-content-between"> 
+      <div id="bottom-controls" class="row justify-content-between"> 
         
       </div>
      </div>`);
-     this.createDropdowns()
-     this.createKnobs()
+     this.createControls()
      this.createContent()
   }
   getColorScheme()
@@ -498,16 +475,24 @@ class View_State
    async geomap()
    {
      await this.serverRequest()
-     
+
+         
+     if (selected_vs && this!==selected_vs)
+     {
+      return 
+     } 
+    
      if (this.object_instance && this.object_instance.remove)
      {
+       console.log("instance is:", this.object_instance)
        this.object_instance.off()
        this.object_instance.remove()
+       console.log("instance is removed:", this.object_instance)
      }
  
      let server_js=this.server_js
      let coords = []
-     let lat, lng, markers;
+     let lat, lng, markers, bounds, mapZoom;
      let markerColor = "red"
      var boostType = "balloon"
      let max_lat = -999, max_lng = -999
@@ -537,6 +522,13 @@ class View_State
       let maxPoint = L.latLng(max_lat,max_lng)
       this.bounds = L.latLngBounds(minPoint,maxPoint)
      }     
+     var center_lat = (max_lat + min_lat)/2
+     var center_lng = (max_lng + min_lng)/2
+ 
+     var map_center = [center_lat, center_lng]
+     let minPoint = L.latLng(min_lat,min_lng)
+     let maxPoint = L.latLng(max_lat,max_lng)
+     this.bounds = L.latLngBounds(minPoint,maxPoint)
  
      try
      { 
@@ -565,6 +557,7 @@ class View_State
      L.easyButton( 'fa-undo', function(){
       osMap.fitBounds(bounds);
       }).addTo(osMap);
+
      function setMarkers() {
        if (markers)
          osMap.removeLayer(markers)
@@ -892,22 +885,24 @@ class View_State
     let ctx2 = canvas.getContext("2d");
 
     let n_vals = 2
-    let meas1 = 'price'
-    let meas2 = 'size'
-
-    let i = server_js.headers.indexOf(meas1)
-    let j = server_js.headers.indexOf(meas2)
-
+    let meas1 = Comma_Sep([this.state.x_axis], vs_id)
+    let meas2 = Comma_Sep([this.state.y_axis], vs_id)
+    let meas3 = Comma_Sep([this.state.z_axis], vs_id)
+    if (meas3 != '')
+      n_vals = 3
+    let i1 = server_js.headers.indexOf(meas1)
+    let i2 = server_js.headers.indexOf(meas2)
+    let i3 = server_js.headers.indexOf(meas3)
     let max_val = -Infinity, min_val = Infinity
     let points=[]
     for (let row of server_js.data)
     {
-      let x=row[i]
-      let y=row[j]
+      let x=row[i1]
+      let y=row[i2]
       points.push({x:x,y:y})
       if (n_vals >= 3)
       {
-        let val = row[1][2]
+        let val = row[i3]
         max_val = Math.max(max_val, val)
         min_val = Math.min(min_val, val)
       }
@@ -925,19 +920,10 @@ class View_State
 
     const data = {
       datasets: [{
-        label: 'Scatter Dataset',
+        label: null,
         data: points,
         //backgroundColor: 'rgb(255, 99, 132)'
-        pointBackgroundColor: function(context) {
-          if (n_vals >= 3)
-          {
-              let val = server_js[context.dataIndex][1][2]
-              return this.point_colors(val)
-          }
-          else
-            return 'red';
-  
-        }
+        pointBackgroundColor: colorCallback.bind(null, this)
       }],
     };
 
@@ -950,20 +936,41 @@ class View_State
         scales: {
           x: {
             type: 'linear',
-            position: 'bottom'
+            position: 'bottom',
+            title: {
+              display:true,
+              text: meas1
+            }
+          },
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: {
+              display:true,
+              text: meas2
+            }
           }
         },
         plugins: {
-          // tooltip: {
-          //     callbacks: {
-          //         label: function(ctx) {
-          //             // console.log(ctx);
-          //             let label = server_js[ctx.dataIndex][0][0] //ctx.dataset.labels[ctx.dataIndex];
-          //             label += " (" + ctx.parsed.x + ", " + ctx.parsed.y + ")";
-          //             return label;
-          //         }
-          //     }
-          // },
+          tooltip: {
+              callbacks: {
+                  label: function(ctx) {
+                      // console.log(ctx);
+                      //let label = server_js.data[ctx.dataIndex][0][0] //ctx.dataset.labels[ctx.dataIndex];
+                      
+                      let label = `${meas1} = ${ctx.parsed.x}; ${meas2} = ${ctx.parsed.y}`
+                      if (n_vals >= 3 && (meas3 != meas1 && meas3 != meas2))
+                      {
+                        let val = server_js.data[ctx.dataIndex][i3]
+                        label += `; ${meas3} = ${val}`
+                      }
+                      return label;
+                  }
+              }
+          },
+          legend: {
+            display: false
+          },
           zoom: {
             pan: {
               enabled: true,
@@ -997,6 +1004,18 @@ class View_State
     }
 
     this.object_instance = new Chart(ctx2, config);
+
+    function colorCallback(instance, context) 
+    {
+      if (n_vals >= 3)
+      {
+          let val = server_js.data[context.dataIndex][i3]
+          return instance.point_colors(val)
+      }
+      else
+        return 'red';
+
+    }
 
   }
   async getTreeMapData()
