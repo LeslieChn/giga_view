@@ -489,7 +489,6 @@ class View_State
    {
      function callback(instance)
      { 
-      console.log("new bounds is:",instance.bounds)
       instance.object_instance.invalidateSize()
       instance.object_instance.fitBounds(instance.bounds)
      }
@@ -513,7 +512,7 @@ class View_State
      var boostType = "balloon"
      let max_lat = -999, max_lng = -999
      let min_lat =  999, min_lng =  999
-     
+     let data_index = 0
      for (const data of server_js.data)
      {
        lat = parseInt(data[12]) /1e6
@@ -522,10 +521,10 @@ class View_State
        max_lng = (lng>max_lng)? lng : max_lng
        min_lat = (lat<min_lat)? lat : min_lat
        min_lng = (lng<min_lng)? lng : min_lng
-       coords.push([lat,lng])
+       data[12] = lat
+       data[13] = lng
+       coords.push([lat,lng,data_index++])
      }
-     var center_lat = (max_lat + min_lat)/2
-     var center_lng = (max_lng + min_lng)/2
      this.numcoords = coords.length
      if (!this.bounds)
      {
@@ -571,9 +570,7 @@ class View_State
          osMap.removeLayer(markers)
        markers = L.featureGroup()
        for (let coord of coords) {
-        let html = `${coord[0]},${coord[1]}`
-        // `<a target="_blank" href="https://www.google.com/maps/place/${coord[0]}N+${coord[1]}W">' ${coord[0]},${coord[1]} </a>`
-         L.circleMarker(coord, {
+         L.circleMarker([coord[0],coord[1]], {
              fillColor: markerColor,
              fillOpacity: 1,
              stroke: true,
@@ -585,7 +582,43 @@ class View_State
              radius: 6
          })
          .addTo(markers)
-         .bindPopup(`<a target="_blank" href="https://www.google.com/maps/search/${coord[0]}+${coord[1]}">${coord[0]},${coord[1]}</a>`);
+         .bindPopup("Loading element data, please wait...")
+         .on('click', onMapClick);
+         function onMapClick(e)
+         {
+          let node = server_js.data[coord[2]]
+          let address, img_url = "";
+          // console.log(`${node[13]},${node[12]}`)
+            $.get(`https://www.zillow.com/homes/${node[0]}<br>${node[1].replaceAll('-',', ')}, ${node[2]}_rb`, function(data, status){
+              let str = 'property="og:image" content="'
+              let start = data.indexOf(str) + str.length
+              let end = data.indexOf('"' , start)
+              img_url = data.substring(start,end)
+              console.log(img_url)
+              if (!img_url.startsWith('https://'))
+              {
+                img_url = "assets/img/logo_sun.png"
+              }
+              address = `
+              <div class="row"><div class="col-12" id="mly"><img class="img-fluid" alt="..." src="${img_url}"></div></div>
+              <div class="row"><div class="col-12 px-2 d-flex align-items-center justify-content-center"><p>${node[0]}<br>${node[1].replaceAll('-',', ')}, ${node[2]}</p></div></div>
+              <div class="row px-4 d-flex">
+              <p><b>Property type:</b> ${node[5]}<br>
+              <b>Number of Bedrooms:</b> ${node[7]}<br>
+              <b>Number of Bathrooms:</b> ${node[8]}<br>
+              <b>Size:</b> ${node[9]} sqft<br>
+              <b>Price:</b> $${node[10].toLocaleString("en")}<br>
+              <b>Year built:</b> ${node[11]}<br>
+              <b>Elevation:</b> ${node[14]}</p>
+              </div>
+              <div class="row px-4  align-items-center justify-content-center">
+              <a style="margin: 0px 6px 12px 0px;" target="_blank" class="btn btn-success col-5 " href="https://www.zillow.com/homes/${node[0]},${node[1].replaceAll('-',', ')}, ${node[2]}_rb">Zillow</a>
+              <a style="margin: 0px 0px 12px 6px;" target="_blank" class="btn btn-info col-5 " href="https://www.google.com/maps/search/${node[12]},${node[13]}">Google</a>
+              </div>
+              `
+              e.target.bindPopup(address).openPopup();
+            });
+         }
        }
        markers.addTo(osMap);
      }
